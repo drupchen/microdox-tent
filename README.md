@@ -1,135 +1,259 @@
-# Microdox tenting stand
+# charybdis-tent
 
-A 3D-printed tenting stand for the Boardsource **Microdox v2** (wireless build). Each half gets one printed stand that replaces the stock 2.0 mm bottom plate. The keyboard screws onto it with its stock bottom screws, and the stand holds it at 20–35° of tent. A printed spacer locks the two halves together at whatever spacing and splay you choose, so they act as one board.
+A fork of [josephdcaputo/microdox-tent](https://github.com/josephdcaputo/microdox-tent),
+retargeted from the Boardsource Microdox v2 to a **Bastard Keyboards Charybdis**,
+and extended to much steeper tent angles.
 
-![Both halves joined at 30°](docs/images/assembly_30deg.png)
+Upstream gives us the architecture this needs: one printed stand per half that the
+keyboard screws onto, plus a printed spacer that locks the two halves at a chosen
+spacing and splay so they behave as one board — all from a single parametric
+OpenSCAD file, with collision checking between the stands, the spacer and both
+keyboard halves.
 
-## Status
-| Part | State |
-|---|---|
-| Stand (20/25/30/35°), spacers, coupler | Designed; all automated checks pass |
-| Test prints (fit plate, joint test) | Ready. **Print these first.** |
-| Metal base plate (heft) | Planned: a laser-cut steel or brass plate under each stand |
-| Board geometry | From the v1 files; v2 match not yet confirmed (see "Before you print") |
+What changes here is the angle range, the target board, and the fact that the whole
+thing has to work on a lap and then go in a bag.
 
-## How it works
-**Stand (one per half), printed as one piece:**
-- **Plate:** this is what the keyboard screws onto. It has big soft openings, and stays solid around the screw holes and under the battery.
-- **Ribs:** three curved ribs. They sit between the screw rows, so every bottom screw can be reached straight from below.
-- **Foot bar:** a bar at desk level along the inner edge, carrying two dovetail tongues.
-- **Feet:** a silicone strip under the foot bar and a silicone disc under each outer foot, in 0.5 mm recesses so the pads come out level.
+---
 
-**Joint between the halves.** A spacer drops onto the tongues of both stands.
-- **Location:** each tongue is a dovetail, which stops the spacer moving sideways or front/back.
-- **Height:** each tongue's top is a 30° slope, and the spacer's socket ceiling has the same slope. The spacer rests on that slope, so its height is set by geometry, not by how tight the print came out.
-- **Clamp:** one M3×10 button-head screw per tongue goes down through the spacer's roof into a heat-set insert. Tightening pulls the spacer down the slope onto the dovetail, which takes out the play.
-- **Interchangeable:** the joint is the same at every tent angle, so any spacer fits any pair of stands.
-- **Spacing and splay:**
-  - Spacing = `spacer_len`. For longer gaps, chain spacers with a coupler (A + 4 mm + B).
-  - Splay is built into one spacer.
+## Why this fork exists
 
-![Joint cross-section](docs/images/joint_section.png)
+The keyboard currently sits on a folding wire grid table resting on my legs in a
+zero-gravity recliner. The halves are held by the upstream Charybdis *modular
+adjustable tenting stand* (hinged voronoi plates, slotted steel strut dropping into
+a ratchet rail), and the whole assembly — stands and palm rests both — is lashed to
+the wire mesh with twist-ties.
 
-## Before you print
-1. **Paper template** (`docs/fit_template_1to1_letter.pdf`): print at 100% / Actual size, then check the outline and all 5 holes against your board.
-2. **Fit plate** (`stl/test-prints/fit_plate.stl`, about 1.5 h, 14 g): the stand's exact plate on its own. Screw the **left** half onto it with the stock screws. That proves the hole pattern, screw length, and battery/switch clearance.
-3. **Joint test** (`joint_test_tongue.stl` + `joint_test_socket.stl`, about 30 min): fit a heat-set insert, drop the socket over the tongue, and drive an M3×10 screw. It should slide on by hand with no side play, and the screw should pull it snug.
-4. **Measure:**
-   - stock screw length and head size;
-   - battery and switch depth below the bottom plate;
-   - USB plug length.
+It works. Nothing moves. But:
 
-## Printing
-- **Material:** PLA or PLA+. It's stiffer than PETG and prints the slopes, bridges and dovetails more accurately. Use PETG or ASA only if the board will sit somewhere hot, like a parked car.
-- **Orientation:** every STL is already exported in print orientation; **don't rotate them**.
-  - The stand prints keyboard-face down on the bed.
-  - The spacer prints roof down.
-  - The coupler prints flat.
-- **Supports:** **off**. The design is shaped so nothing needs them, and the checker proves it.
-- **Settings:** 0.2 mm layers, 3 walls, 15% infill. A stand is about 36 g and 4 h at 30° (PrusaSlicer 2.7 estimate).
+1. **The tent angle is capped by the rig, not chosen.** The current 58° is the
+   steepest the strut reaches while the base stays on the grid. It is a ceiling, not
+   a preference — and there is evidence (below) that my hands want more.
+2. **It isn't portable.** The grid table folds but won't go in a bag, and without it
+   the geometry is gone: splay, spacing and rest position all live in twist-ties.
+3. **The geometry isn't recorded anywhere.** If the rig were knocked apart, the splay
+   in particular would take weeks to rediscover by trial and error.
 
-| File | Qty |
-|---|---|
-| `stl/stands/stand_left_XXdeg.stl`, `stand_right_XXdeg.stl` | 1 each, same angle |
-| `stl/joint/spacer_40mm.stl` (or 60 / 80 / 45 mm with 10° splay) | 1 |
-| `stl/joint/coupler.stl` | only to chain two spacers |
-| `stl/test-prints/*` | first, once |
+The goal is to turn the geometry into a file and a set of parts.
 
-## Hardware
-- Stock M2 bottom screws (the screw seats are 2.0 mm, the same as the stock plate)
-- M3 heat-set inserts, Ø4.0 mm hole × 5.7 mm long: 2 per stand, 4 per coupler
-- M3×10 button-head screws: 4 per spacer
-- Self-adhesive silicone sheet, 1–1.5 mm thick: per stand, one 10 × 62 mm strip and two 8–9 mm discs
-- Right-angle USB-C cable, for charging while the board is on the stand
+---
 
-## Assembly
-1. **Inserts:** iron the heat-set inserts into each stand's two tongues. Go straight down, flush with the small flat around each hole. About 200 °C for PLA.
-2. **Keyboard onto stand:** screw each half on with the stock M2 screws, from underneath through the open frame. Use a driver with a shaft ≥ 50 mm and a handle ≤ 12 mm across.
-3. **Pads:** stick on the strip and discs. Use the same material on every foot so the stand sits level.
-4. **Join:** set both halves on the desk, drop the spacer onto the four tongues, and snug the four M3×10 screws.
+## Measurements
 
-## Changing the design
-Everything is one parametric OpenSCAD file, `cad/microdox_ribs.scad`. The board geometry is in `cad/microdox_ref.scad`. Change the numbers at the top of the file, then export:
+### Tent angle
 
-```
-openscad -D 'part="stand_left"'  -D tent_deg=27 -o stand_left.stl  cad/microdox_ribs.scad
-openscad -D 'part="stand_right"' -D tent_deg=27 -o stand_right.stl cad/microdox_ribs.scad
-openscad -D 'part="spacer"' -D spacer_len=55 -D splay_deg=8 -o spacer.stl cad/microdox_ribs.scad
-```
+Measured with a phone level app (accelerometer, not the compass — the compass is
+useless this close to a steel wire rack). The phone was held flat against the **base
+plate of each half**, which is the plane the tenting mechanism actually controls. A
+vertical plane between the halves was used as the 0° datum.
 
-**Limits:**
-- tent 20–35°;
-- `outer_lift` ≥ 8 mm;
-- minimum `spacer_len` is 26 mm at 0° splay, 31 mm at 10°, 33 mm at 15°.
+| | off vertical | from horizontal |
+|---|---|---|
+| Left half | 31° | 59° |
+| Right half | 33° | 57° |
+| **Mean** | **32°** | **~58°** |
 
-The file refuses values outside these.
+Opposite signs, so the halves roll toward each other as expected.
 
-## Checking a change
-`tools/check_ribs.py` rebuilds the parts and checks them. It needs openscad and `pip install trimesh numpy shapely rtree`. It reads every constant from the .scad, so it follows any edit.
+**This is a ceiling, not a target.** See *Open questions* below.
 
-```
-python3 tools/check_ribs.py --tent 20 25 30 35 --chain 40 60
-```
+### Splay
 
-**Stand:**
-- one watertight piece, with nothing above the keyboard's plane;
-- screw seats exactly 2.0 mm;
-- a clear straight path to every bottom screw;
-- USB plug clearance;
-- fits a 220 mm bed;
-- pad recesses all the same depth.
+Measured from a top-down photo against the wire grid, using two straight sticks laid
+along the inner edges of the foot plates.
 
-**Print:**
-- in print orientation, nothing starts in mid-air (layer-by-layer check);
-- no overhang bigger than a short bridge.
+- **~28° per side** from the fore-aft axis
+- **~56° included** between the halves
 
-**Joint:**
-- zero overlap at rest, and contact when the spacer is lowered 0.1 mm, which proves the slope sets the height;
-- screws line up through the spacer roof into the inserts;
-- M3×10 thread engagement;
-- a straight tool path to every joint screw.
+Confidence: moderate. Needs confirming by counting grid squares — lay a stick along a
+plate edge, count squares across versus along, `atan(across/along)`. Integer counts,
+no measurement error.
 
-**Assembly:** no 3D collisions between both stands, the spacer and both keyboards, with splay applied. Chains are checked the same way.
+This is the number most worth recording. The tent angle could be rediscovered by feel
+in ten minutes; a 56° splay could not.
 
-`tools/stability.py --half-g <your half's weight in g>` estimates how hard you'd have to push a key to rock a lone half, and how much sideways drag slides the pair. Results are in `docs/check_results/`.
+### Symmetry
 
-## Known limits
-- **Lone half:** at 30–35° a single half on its own rocks under about 3.5–5.5 N on the worst thumb key. Joined by the spacer, the pair needs more than 50 N. Use the halves joined.
-- **Grip:** a keypress can't slide the board if the pads' friction coefficient exceeds tan(tent), which is 0.58 at 30°. Silicone pads pass; bare plastic doesn't. To test: put a half on a scrap of your desk mat and tilt it. If it doesn't slide before the tilt passes your tent angle, typing won't walk it.
-- **USB:** with a straight USB-C plug, `outer_lift` needs to be ≥ 11 mm at 30° (≥ 13 mm at 35°). A right-angle plug is fine at the default 8 mm.
+A **2° left/right difference** has shown up twice, from two different sensors
+measuring two different physical quantities:
 
-## Repo layout
-```
-cad/            microdox_ribs.scad (the design), microdox_ref.scad/.json (board geometry)
-stl/stands/     stands at 20/25/30/35 deg, left and right
-stl/joint/      spacers and coupler
-stl/test-prints fit plate, joint test pieces
-tools/          check_ribs.py (checker), stability.py (rocking / sliding estimates)
-docs/           fit template, images, checker logs
-reference/      original source files (Boardsource, 40-percent) with their licenses
-```
+- Magnetic headings against a midline reference: 61° and 59°
+- Level readings off vertical: 31° and 33°
 
-## Sources and licenses
-- [boardsource/microdox-goodies](https://github.com/boardsource/microdox-goodies) (GPL-3.0): PCB outline and drill map. The stand's plate and hole pattern are derived from these, so if you publish this repo, licence it GPL-3.0 too.
-- [40-percent/microdox-case](https://github.com/40-percent/microdox-case) (MIT): stock bottom-plate reference
-- [waffle87 v2 build guide](https://github.com/waffle87/microdox/blob/master/v2_guide.md)
+Unlikely to be coincidence in both. Still undecided whether this is a real asymmetry
+worth preserving or accumulated drift in the ratchet that I've adapted to.
+Test: swap the halves left-for-right and see whether one side suddenly feels wrong.
+
+### Hand posture
+
+- Full **handshake orientation** — hand close to vertical, forearm supported on the
+  chair's armrest, pronation essentially eliminated.
+- Heel of the palm rests on a **rocking support**: printed cradle, glass dome, ribbed
+  foam grip on top. The dome is a deliberate pivot, letting the hand rotate as the
+  fingers move between columns. Nothing bounds its travel, which is the one thing
+  about it worth fixing.
+- **Float test passes**: I can lift the hand clear of the rest and type the home row
+  with no change in finger reach. So the rest is a locating surface, not a load path —
+  the forearm's weight goes into the armrest, not into the heel of the palm.
+- **The pinky is held stretched backwards.** This is the open ergonomic problem.
+
+### The 30° mismatch
+
+Hand at ~90°, board at 58°. Something absorbs the difference, and it's the fingers.
+Index through ring are flexing, which they're built for. The little finger can't, so
+it extends backwards instead and stays there.
+
+Taking the left half steeper (it has no trackball to fall out) noticeably eased the
+tension. That is the main evidence that 58° is too shallow.
+
+### Trackball retention
+
+The stock top adapter does not retain the ball at all. Measured off the upstream STLs:
+
+| | stock `adapter_v4_v4_top.stl` | `mods/trackball_retainer/4x6/trackball_retainer.stl` |
+|---|---|---|
+| Footprint | 45.60 mm | 45.60 mm |
+| Mounting face | −19.00 | −19.00 |
+| Top face | −1.00 | **+2.00** |
+| Narrowest point above the ball | **35.00 mm** | **33.50 mm** |
+
+Every cross-section below the stock top face is numerically identical between the two
+files — the retainer is literally the stock part with 3 mm added.
+
+A 35.00 mm aperture against a 34 mm ball means a full millimetre of clearance: the ball
+was never held, only rested. At 58° it is marginal; past that it unseats and leaves one
+of its lower contact points.
+
+The retainer's 33.50 mm aperture is smaller than the ball, so the equator cannot pass.
+In normal use the ball's width at that height is only ~29 mm, so it's a hard stop rather
+than a squeeze. **At steep tent that changes** — gravity presses the ball against the
+rim continuously, so expect rim contact and some drag. Upstream's own notes say rotation
+feels stiff at first and eases with use.
+
+Note: upstream says the retainer's height is tuned for the `static-bearing-screws` mod,
+not the stock bearings. My socket appears to have more contact points than stock, so the
+fit needs checking before trusting it.
+
+---
+
+## Requirements
+
+### Must
+
+- Work on a **lap**, in a reclined zero-gravity chair, not only on a desk.
+- Capture **tent, splay and inter-half distance** repeatably — set it down, pick it up,
+  same geometry.
+- **Pack flat** and fit in a bag.
+- Reach **~70–75° tent**, well beyond upstream's 20–35° range.
+- Work with the trackball retained at that angle.
+
+### Should
+
+- Carry the **palm rests** as part of the geometry. Where the palm pivots sets where all
+  four fingers land; leaving the rests behind loses the setup, not just a comfort item.
+- **Feet that do both jobs** — pegs that drop into the wire mesh for positive location at
+  home, and a flat pad for a table when away.
+- Nothing held by **friction**. Pinned, slotted or bolted only, so nothing creeps.
+
+### Constraints
+
+- **No 3D printer.** A print shop in Lousã, charging by weight and machine time at roughly
+  €0.05/g (≈€20 for a ~400 g part). So: flat plates, not solid wedges — a fraction of the
+  Z height and roughly half the material. Web everything out.
+- **One print job.** All prototyping happens in cardboard first; the printed version is a
+  transcription of something already proven.
+- **PETG, not PLA.** The parts carry the keyboard's weight continuously once tented, and
+  PLA creeps under sustained load.
+
+### Explicit non-requirements
+
+- **No adjustment mechanism.** Because the angle gets found in cardboard, the printed part
+  can be a single fixed angle — lighter, stronger, cheaper and simpler than detents or
+  bolt arrays. Adjustability was only ever a workaround for not being able to iterate.
+- No need to print a lap deck. The grid table at home, a table away, or a thin plywood or
+  acrylic sheet — the deck is interchangeable and the printed parts carry only the geometry.
+
+---
+
+## Hardware as built
+
+- Charybdis, built from the upstream BastardKB STLs, apparently unmodified except for the
+  tenting base. Sourced cheaply; the printed parts are stock files.
+- Stock trackball top adapter in place (`adapter_v4_v4_top.stl` / `adapter_v2_top_v75.stl` —
+  identical bounding boxes). Removable, which means a full 360° capture ring is viable and
+  removing it is how the ball gets cleaned.
+- Current tenting: upstream modular adjustable tenting stand, angle set by which ratchet
+  tooth the strut's fork sits in, held there by a twist-tie.
+- Palm rests: printed peanut-shaped cradle, glass dome, ribbed foam grip, twist-tied to the
+  mesh.
+
+---
+
+## Open questions
+
+Ordered by how much they block the design.
+
+1. **What is the right tent angle?** 58° is a ceiling. Cardboard test pairs at 65° and 75°
+   bracket the likely answer. Each angle needs a full working session, not five minutes —
+   the symptoms being chased are hours-scale, and a wrong angle feels fine for the first
+   few minutes.
+2. **Is the pinky stretch caused by the tent, the rest position, or the keymap?** Three
+   candidates, each cheap to test: take the tent steeper; move the rest forward or outward;
+   or remap whatever key the little finger is reaching for. Only the first two are a
+   hardware problem.
+3. **Real asymmetry or ratchet drift?** Decides whether this is one mirrored part or two
+   distinct ones.
+4. **Does the upstream trackball retainer fit this socket?** Depends on ball diameter and
+   on where the lower bearings sit.
+
+### Still to measure
+
+- Bolt pattern on the case bottom plate (requires opening the keyboard)
+- Trackball diameter — assumed 34 mm, unconfirmed
+- Lower bearing count and diameter — the socket appears to have more contacts than stock
+- Wire grid pitch and wire diameter
+- Palm rest positions, in grid squares from a common corner
+- Print shop bed size and exact per-gram rate
+
+### Method note
+
+Before dismantling anything, **trace the current layout**: lay cardboard over the grid, put
+both halves and both rests in position, draw around all four, mark the inner corners. That
+single tracing captures splay, spacing and rest position at once, with no angles and no
+arithmetic — and it becomes the baseplate template directly. Once the halves come off the
+grid, that information is gone.
+
+---
+
+## Changes planned against upstream
+
+| | upstream microdox-tent | here |
+|---|---|---|
+| Target board | Microdox v2 | Charybdis |
+| Tent range | 20–35° | ~55–80° |
+| Mounting | replaces stock 2.0 mm bottom plate | TBD — likely bolts to the existing bottom-plate pattern |
+| Construction | printed ribbed stand | flat plates, slot-and-tab, for cost and packing |
+| Surface | desk | lap deck, wire mesh, or table |
+| Transport | — | comes apart, packs flat |
+| Palm rests | not addressed | carried on the spine |
+| Trackball | n/a | needs retention at steep tent |
+
+The spacer geometry and the collision checking are the parts worth keeping as-is — they're
+the hard bit, and they're already solved.
+
+---
+
+## Credits
+
+- [josephdcaputo/microdox-tent](https://github.com/josephdcaputo/microdox-tent) — the stand
+  and spacer architecture, and the parametric OpenSCAD implementation this forks.
+- [Bastard Keyboards](https://github.com/Bastardkb/Charybdis) — the Charybdis itself, the
+  modular adjustable tenting stand, and the trackball retainer mod. CC BY-NC-SA 4.0.
+
+Worth reading before cutting anything:
+
+- [rgoulter/keyboard-labs](https://github.com/rgoulter/keyboard-labs) — `keyboard_tenting_stand.scad`,
+  a laser-cut parametric tenting stand. Laser-cut means flat plates, which is both the
+  cost-efficient print and the thing that cuts directly in cardboard.
+- [AlSpheric's Iris stand](https://github.com/Ivaan/shapes/tree/master/IrisKeyboardStand) —
+  parametric, generated from a list of plate screw coordinates, so it retargets to any split
+  board with top/bottom plates and standoffs.
