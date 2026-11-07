@@ -2,7 +2,7 @@
 
 A fork of [josephdcaputo/microdox-tent](https://github.com/josephdcaputo/microdox-tent),
 retargeted from the Boardsource Microdox v2 to a **Bastard Keyboards Charybdis**,
-and extended to much steeper tent angles.
+and from a tenting wedge to a **fully vertical stand**.
 
 Upstream gives us the architecture this needs: one printed stand per half that the
 keyboard screws onto, plus a printed spacer that locks the two halves at a chosen
@@ -10,8 +10,47 @@ spacing and splay so they behave as one board — all from a single parametric
 OpenSCAD file, with collision checking between the stands, the spacer and both
 keyboard halves.
 
-What changes here is the angle range, the target board, and the fact that the whole
-thing has to work on a lap and then go in a bag.
+What changes here is the angle, the target board, and the fact that the whole thing has to
+work on a lap and then go in a bag. The angle turned out to change the architecture with it:
+at 90° a wedge is simply the wrong shape, and the stand becomes a bookend. The spine does not
+change — see *What's in here* below.
+
+---
+
+## What's in here
+
+| | |
+|---|---|
+| `cad/microdox_ribs.scad` | Upstream's wedge stand, 20–35°. Unchanged apart from a comment on why 35° is the ceiling. |
+| `cad/vertical.scad` | **The 90° stand.** Three flat plates per half — wall, two braces, base — slotted together. |
+| `stl/stands/`, `stl/joint/` | Upstream exports: wedge stands at 20–35°, and the spacers and couplers. |
+| `stl/vertical/` | Exports of the 90° stand. **Microdox hole pattern — a geometry proof, not parts to print.** |
+| `tools/` | Upstream's rib print-angle checker and the stability model. |
+
+### Why the wedge file couldn't just take a bigger number
+
+The Ribs stand is a wedge, and a wedge does not become a bookend by turning a knob.
+`plate_in_x()` falls from ~87 mm at 30° to `plate_t` (3 mm) at 90°, `foot_x()` goes negative,
+and the wishbone ribs invert through the plate. The `tent_deg` assert in that file is a real
+structural limit, not a cautious one. 36–89° is unexplored territory: neither file covers it.
+
+### What carries over unchanged
+
+The dovetail joint. `cad/vertical.scad` includes `microdox_ribs.scad` directly and reuses
+`sloped_tongue()`, so **every spacer and coupler already in `stl/joint/` fits the vertical
+stands**. This is not luck: `top_slope()` is `max(30, 50 - tent_deg)`, which evaluates to 30
+for every tent angle in 20–35°, so the joint geometry never depended on the tent angle. The
+hard part of the project — a repeatable, screw-clamped, chainable connection that sets
+spacing and splay — was already angle-agnostic, which is why the inter-half distance stays
+changeable for free.
+
+### Current numbers
+
+Flat plates at 6 mm, on the Microdox outline: **86 g per half, 172 g the pair** — roughly €9
+of filament at €0.05/g, plus machine time. Wall and brace are plain prisms, so one printed
+part serves either hand by flipping it over; only the base is handed, because its tongues
+stand proud on one face. Wall-to-wall spacing is 160 mm with the 40 mm spacer, and changes
+with the spacer.
 
 ---
 
@@ -25,9 +64,10 @@ the wire mesh with twist-ties.
 
 It works. Nothing moves. But:
 
-1. **The tent angle is capped by the rig, not chosen.** The current 58° is the
-   steepest the strut reaches while the base stays on the grid. It is a ceiling, not
-   a preference — and there is evidence (below) that my hands want more.
+1. **The tent angle was capped by the rig, not chosen.** 58° was the steepest the strut
+   reached while the base stayed on the grid — a ceiling, not a preference. It has since
+   been taken all the way to vertical, which the rig only just allows and cannot hold
+   well. *(Resolved: see below. The rest of this list still stands.)*
 2. **It isn't portable.** The grid table folds but won't go in a bag, and without it
    the geometry is gone: splay, spacing and rest position all live in twist-ties.
 3. **The geometry isn't recorded anywhere.** If the rig were knocked apart, the splay
@@ -39,12 +79,26 @@ The goal is to turn the geometry into a file and a set of parts.
 
 ## Measurements
 
-### Tent angle
+### Tent angle — 90°, settled
 
-Measured with a phone level app (accelerometer, not the compass — the compass is
-useless this close to a steel wire rack). The phone was held flat against the **base
-plate of each half**, which is the plane the tenting mechanism actually controls. A
-vertical plane between the halves was used as the 0° datum.
+**The board is vertical.** Set there, typed on, kept.
+
+This is the end of the range rather than a step along it. At 90° the forearm is in true
+neutral — the handshake position — and pronation is zero. Past vertical the forearm would
+begin to supinate, which has costs of its own. There is no steeper setting to go looking
+for, and that is exactly the condition a single print needs: the angle question is closed
+before anything is cut.
+
+At 90° the outer (USB, pinky) edge sits at the bottom and the inner (thumb) edge at the top,
+so the keys face **outward**, away from the other half, and the hands come in from outside.
+This matters more than it sounds — it decides which way every force points. See *Stability*.
+
+#### The previous setting, kept for the record
+
+Before going vertical the rig sat at ~58°, measured with a phone level app (accelerometer,
+not the compass — the compass is useless this close to a steel wire rack). The phone was held
+flat against the **base plate of each half**, which is the plane the tenting mechanism
+actually controls, with a vertical plane between the halves as the 0° datum.
 
 | | off vertical | from horizontal |
 |---|---|---|
@@ -52,9 +106,31 @@ vertical plane between the halves was used as the 0° datum.
 | Right half | 33° | 57° |
 | **Mean** | **32°** | **~58°** |
 
-Opposite signs, so the halves roll toward each other as expected.
+Opposite signs, so the halves rolled toward each other as expected. Retained here only
+because the 2° asymmetry below was measured from this setting, and because the reasoning
+in *The 30° mismatch* depends on it.
 
-**This is a ceiling, not a target.** See *Open questions* below.
+### Stability
+
+At 90° the keys face outward, so **a keypress pushes each half inward**, toward the other.
+The halves lean on the spine between them and the spine takes the load in compression.
+
+This is the opposite of the wedge case, and it is the reason the project survives the angle
+change. `docs/check_results/stability.txt`, generated from this repo's own geometry, shows
+the restoring moment of a lone wedge-mounted half collapsing as it steepens:
+
+| tent | lone half rocks at | tips over at |
+|---|---|---|
+| 20° | 101.3 N | never |
+| 25° | 11.3 N | never |
+| 30° | 5.5 N | 17.7 N |
+| 35° | 3.4 N | 6.8 N |
+
+A keypress is roughly 0.6 N, bottoming out perhaps 1.5 N. Extrapolated to 90°, a free half
+has essentially no restoring moment at all. So the spine stops being a convenience that holds
+splay and becomes **the thing that stops the keyboard falling over**. One half of this must
+never be stood up on its own, and the spine has to be rigid in compression rather than merely
+a spacer that sets a distance.
 
 ### Splay
 
@@ -64,12 +140,13 @@ along the inner edges of the foot plates.
 - **~28° per side** from the fore-aft axis
 - **~56° included** between the halves
 
-Confidence: moderate. Needs confirming by counting grid squares — lay a stick along a
-plate edge, count squares across versus along, `atan(across/along)`. Integer counts,
-no measurement error.
+Confidence: moderate, and now **stale** — this was measured at 58°, and going vertical
+very likely moved it. Re-measure before cutting the base plates, by counting grid squares:
+lay a stick along a plate edge, count squares across versus along, `atan(across/along)`.
+Integer counts, no measurement error.
 
-This is the number most worth recording. The tent angle could be rediscovered by feel
-in ten minutes; a 56° splay could not.
+With the tent settled, this is now the number most worth recording. The tent angle could be
+rediscovered by feel in ten minutes; a 56° splay could not.
 
 ### Symmetry
 
@@ -82,6 +159,11 @@ measuring two different physical quantities:
 Unlikely to be coincidence in both. Still undecided whether this is a real asymmetry
 worth preserving or accumulated drift in the ratchet that I've adapted to.
 Test: swap the halves left-for-right and see whether one side suddenly feels wrong.
+
+Both readings are from the 58° rig, and both are tent measurements, so **going vertical
+settles this by itself**: at 90° there is no ratchet tooth left to drift, and both halves
+are at the same hard stop. If one side still feels wrong now, the asymmetry is real and
+lives in the splay or the rest position, not in the tent.
 
 ### Hand posture
 
@@ -96,14 +178,18 @@ Test: swap the halves left-for-right and see whether one side suddenly feels wro
   the forearm's weight goes into the armrest, not into the heel of the palm.
 - **The pinky is held stretched backwards.** This is the open ergonomic problem.
 
-### The 30° mismatch
+### The 30° mismatch — closed
 
-Hand at ~90°, board at 58°. Something absorbs the difference, and it's the fingers.
-Index through ring are flexing, which they're built for. The little finger can't, so
-it extends backwards instead and stays there.
+Hand at ~90°, board at 58°. Something had to absorb the difference, and it was the fingers.
+Index through ring were flexing, which they're built for. The little finger can't, so it
+extended backwards instead and stayed there.
 
-Taking the left half steeper (it has no trackball to fall out) noticeably eased the
-tension. That is the main evidence that 58° is too shallow.
+Taking the left half steeper (it has no trackball to fall out) noticeably eased the tension.
+That was the evidence that 58° was too shallow, and it is what the move to 90° acted on.
+
+**Going vertical removes the mismatch at its source.** Whether it also removes the pinky
+stretch is now a live question with a clean answer either way: if the stretch persists at
+90°, the tent angle was never the cause, and only rest position and keymap remain.
 
 ### Trackball retention
 
@@ -119,9 +205,18 @@ The stock top adapter does not retain the ball at all. Measured off the upstream
 Every cross-section below the stock top face is numerically identical between the two
 files — the retainer is literally the stock part with 3 mm added.
 
-A 35.00 mm aperture against a 34 mm ball means a full millimetre of clearance: the ball
-was never held, only rested. At 58° it is marginal; past that it unseats and leaves one
-of its lower contact points.
+A 35.00 mm aperture against a 34 mm ball means a full millimetre of clearance: the ball was
+never held, only rested. At 58° it was marginal, unseating from one of its lower contact
+points.
+
+**At 90° the retainer stops being an upgrade and becomes a prerequisite.** The socket now
+faces sideways, so the ball is held by nothing but whatever part of the rim happens to sit
+beneath it — and an aperture wider than the ball holds nothing at all. Fit the retainer
+before standing the right half up.
+
+Ball diameter is **34 mm**, which is settled rather than measured: it passes through the
+stock 35.00 mm aperture, so it is under 35, and 34 mm is the stock Charybdis size. An earlier
+photo-based estimate of ~42 mm was wrong — the boxes it was wedged between weren't vertical.
 
 The retainer's 33.50 mm aperture is smaller than the ball, so the equator cannot pass.
 In normal use the ball's width at that height is only ~29 mm, so it's a hard stop rather
@@ -129,9 +224,14 @@ than a squeeze. **At steep tent that changes** — gravity presses the ball agai
 rim continuously, so expect rim contact and some drag. Upstream's own notes say rotation
 feels stiff at first and eases with use.
 
-Note: upstream says the retainer's height is tuned for the `static-bearing-screws` mod,
-not the stock bearings. My socket appears to have more contact points than stock, so the
-fit needs checking before trusting it.
+Note: upstream says the retainer's height is tuned for the `static-bearing-screws` mod, not
+the stock bearings. The socket has **three** bearings, which is stock — an earlier count of
+six came from a dark photo and was wrong — so height is the one thing left to check before
+trusting the fit.
+
+Worth printing on its own, ahead of everything else: it is a few grams, so a euro or two with
+machine time, and it shows how the shop's printer handles a part with one tight functional
+dimension before anything expensive is committed.
 
 ---
 
@@ -143,8 +243,10 @@ fit needs checking before trusting it.
 - Capture **tent, splay and inter-half distance** repeatably — set it down, pick it up,
   same geometry.
 - **Pack flat** and fit in a bag.
-- Reach **~70–75° tent**, well beyond upstream's 20–35° range.
+- Hold the halves **vertical (90°)**, well beyond upstream's 20–35° range.
 - Work with the trackball retained at that angle.
+- Be **rigid between the halves**, not merely spaced — at 90° the spine carries the
+  keypress load and is what keeps the assembly upright.
 
 ### Should
 
@@ -166,9 +268,10 @@ fit needs checking before trusting it.
 
 ### Explicit non-requirements
 
-- **No adjustment mechanism.** Because the angle gets found in cardboard, the printed part
-  can be a single fixed angle — lighter, stronger, cheaper and simpler than detents or
-  bolt arrays. Adjustability was only ever a workaround for not being able to iterate.
+- **No adjustment mechanism.** The angle is 90° and there is nothing steeper to adjust
+  toward, so the printed part is a single fixed angle — lighter, stronger, cheaper and
+  simpler than detents or bolt arrays. Adjustability was only ever a workaround for not
+  knowing the answer. Inter-half distance stays adjustable, via the spacers.
 - No need to print a lap deck. The grid table at home, a table away, or a thin plywood or
   acrylic sheet — the deck is interchangeable and the printed parts carry only the geometry.
 
@@ -182,7 +285,9 @@ fit needs checking before trusting it.
   identical bounding boxes). Removable, which means a full 360° capture ring is viable and
   removing it is how the ball gets cleaned.
 - Current tenting: upstream modular adjustable tenting stand, angle set by which ratchet
-  tooth the strut's fork sits in, held there by a twist-tie.
+  tooth the strut's fork sits in, held there by a twist-tie. Now run **vertical**, which is
+  at or past what that mechanism was meant to hold — the halves stand up, but the rig is
+  working at its limit and the geometry is no longer repeatable by tooth count.
 - Palm rests: printed peanut-shaped cradle, glass dome, ribbed foam grip, twist-tied to the
   mesh.
 
@@ -192,26 +297,34 @@ fit needs checking before trusting it.
 
 Ordered by how much they block the design.
 
-1. **What is the right tent angle?** 58° is a ceiling. Cardboard test pairs at 65° and 75°
-   bracket the likely answer. Each angle needs a full working session, not five minutes —
-   the symptoms being chased are hours-scale, and a wrong angle feels fine for the first
-   few minutes.
-2. **Is the pinky stretch caused by the tent, the rest position, or the keymap?** Three
-   candidates, each cheap to test: take the tent steeper; move the rest forward or outward;
-   or remap whatever key the little finger is reaching for. Only the first two are a
-   hardware problem.
-3. **Real asymmetry or ratchet drift?** Decides whether this is one mirrored part or two
-   distinct ones.
-4. **Does the upstream trackball retainer fit this socket?** Depends on ball diameter and
-   on where the lower bearings sit.
+1. **Does 90° hold up over a full working day?** It has been typed on and liked, but the
+   symptoms this project is chasing are hours-scale and a wrong angle feels fine for the
+   first few minutes. Nothing should be cut until a long session has confirmed it. This is
+   the one question that could still invalidate the design.
+2. **Is the pinky stretch caused by the tent, the rest position, or the keymap?** The tent
+   is now at its limit, so that candidate is spent: if the stretch is still there, it was
+   never the angle. Remaining tests are moving the rest forward or outward, and remapping
+   whatever key the little finger reaches for.
+3. **Where do the palm rests go at 90°?** The rest positions were set for a 58° board and
+   are almost certainly wrong now. At 90° the key field is at its tallest, and the rest is
+   what decides where the hand meets it. Re-trace before cutting.
+4. **Real asymmetry or ratchet drift?** Decides whether this is one mirrored part or two
+   distinct ones. Easier to settle now: the ratchet is no longer in the path.
+5. **Does the upstream trackball retainer fit this socket?** Ball diameter and bearing count
+   are settled; only the retainer's height against stock bearings is unverified.
 
 ### Still to measure
 
-- Bolt pattern on the case bottom plate (requires opening the keyboard)
-- Trackball diameter — assumed 34 mm, unconfirmed
-- Lower bearing count and diameter — the socket appears to have more contacts than stock
+- **Bolt pattern on the case bottom plate** (requires opening the keyboard). This is the one
+  blocking measurement: `cad/vertical.scad` is still built on the Microdox hole pattern and
+  cannot be printed for a Charybdis until this is known. A pencil rubbing of the bottom plate
+  gives a 1:1 template with no arithmetic.
+- **Splay, re-measured at 90°** — the recorded ~28°/side is from the 58° rig
+- **Palm rest positions at 90°**, in grid squares from a common corner
+- **Height of each half's bottom edge above the deck** — at 90° the key field is at its
+  tallest, and this sets where the hands have to be
+- Bearing diameter (count is three, confirmed)
 - Wire grid pitch and wire diameter
-- Palm rest positions, in grid squares from a common corner
 - Print shop bed size and exact per-gram rate
 
 ### Method note
@@ -222,6 +335,11 @@ single tracing captures splay, spacing and rest position at once, with no angles
 arithmetic — and it becomes the baseplate template directly. Once the halves come off the
 grid, that information is gone.
 
+Do this again now that the board is vertical. The tracing on file was taken at 58°, and the
+three things it captures — splay, spacing, rest position — are exactly the three most likely
+to have moved. At 90° the footprint of each half is also much narrower, so the old outline no
+longer describes what sits on the deck.
+
 ---
 
 ## Changes planned against upstream
@@ -229,9 +347,11 @@ grid, that information is gone.
 | | upstream microdox-tent | here |
 |---|---|---|
 | Target board | Microdox v2 | Charybdis |
-| Tent range | 20–35° | ~55–80° |
-| Mounting | replaces stock 2.0 mm bottom plate | TBD — likely bolts to the existing bottom-plate pattern |
+| Tent range | 20–35° | 90°, fixed |
+| Stand shape | ribbed wedge | bookend: wall + braces + base |
+| Mounting | replaces stock 2.0 mm bottom plate | bolts to the existing bottom-plate pattern (not yet measured) |
 | Construction | printed ribbed stand | flat plates, slot-and-tab, for cost and packing |
+| Spine | sets spacing and splay | same parts, but now also structural |
 | Surface | desk | lap deck, wire mesh, or table |
 | Transport | — | comes apart, packs flat |
 | Palm rests | not addressed | carried on the spine |

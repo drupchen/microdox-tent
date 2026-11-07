@@ -78,7 +78,11 @@ standoff_h = 4.0;
 cap_top_above_pcb = 18;
 
 $fn = 48;
-assert(tent_deg >= 20 && tent_deg <= 35, "tent_deg must be 20..35 (outside that the ribs/joint are not print-checked)");
+// The 35 deg ceiling is structural, not cautious. This stand is a wedge: plate_in_x()
+// falls from ~87 mm at 30 deg to plate_t at 90 deg, foot_x() goes negative, and the
+// wishbone ribs invert through the plate. For a vertical board use cad/vertical.scad,
+// which keeps this file's dovetail joint so the spacers in stl/joint/ still fit.
+assert(tent_deg >= 20 && tent_deg <= 35, "tent_deg must be 20..35 (outside that the ribs/joint are not print-checked; see cad/vertical.scad for 90 deg)");
 assert(outer_lift >= 8, "outer_lift must be >= 8 mm (USB plug and outer-foot clearance)");
 function plate_in_x() = (100.092 + 1.5) * cos(tent_deg) + plate_t * sin(tent_deg);   // plate's inner extent (world x)
 function x_face() = plate_in_x() + cap_reach;
