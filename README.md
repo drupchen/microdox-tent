@@ -27,6 +27,11 @@ change — see *What's in here* below.
 | `stl/vertical/` | Exports of the 90° stand. **Microdox hole pattern — a geometry proof, not parts to print.** |
 | `tools/` | Upstream's rib print-angle checker and the stability model. |
 
+![The 90° stand, both halves on the spine](docs/images/assembly_vertical.png)
+
+Keys face outward, hands come in from outside, braces sit behind the walls where nothing
+else wants to be, and the spine runs between the two bases.
+
 ### Why the wedge file couldn't just take a bigger number
 
 The Ribs stand is a wedge, and a wedge does not become a bookend by turning a knob.
