@@ -20,6 +20,11 @@
 // rather than two, and it adds six 10.15 mm pockets for the magnetic tenting system.
 // So treat the outline here as indicative and the hole pattern as reliable.
 //
+// CONFIRMED against the physical plate. Drupchen's pencil tracing of the RIGHT half,
+// perspective-corrected against the A4 sheet it was drawn on, matches this pattern to
+// 0.51 mm rms with a single 1.75%% scale factor, and matches the Scylla plate no better
+// than 5.89 mm rms. The left half is the other way round - see scylla_ref.scad.
+//
 // Origin at the outline's min corner. Units mm.
 
 CB_PLATE_SIZE = [153.643, 149.644];
