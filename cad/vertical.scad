@@ -1,42 +1,73 @@
-// vertical.scad - 90 deg (fully vertical) stand. Two walls and a splayed spine. No base plates.
+// vertical.scad - 90 deg (fully vertical) stand for Drupchen's Charybdis.
+// Two handed walls, each hinged to a plate on the desk and braced by two slot-in haunches;
+// the two plates half-lap in the middle. No upper bar, no lip: the boards stand on the desk.
 //
-// Supersedes the earlier version of this file, which gave each half a 139 x 105 mm base
-// plate. That was wrong twice over: the plate was 62% of each half's mass, and it put the
-// structure OUTBOARD, under the hands, while leaving the ~170 mm of air between the two
-// vertical halves completely empty. At 90 deg that gap is dead space - no hands, no
-// keycaps, no cables - and it is the only place structure does not get in the way.
+// THE BOARDS. The two halves carry plates from two different boards (identified from Drupchen's tracings):
+//   left  = Scylla MK1 plate     (scylla_ref.scad)
+//   right = Charybdis MK1 plate  (charybdis_ref.scad)
+// So the walls are two different parts, not one part flipped. Only the six mounting holes
+// are good to a tenth of a millimetre (from upstream DXFs); the reset plunger and cable
+// opening come from the tracings and are good to ~0.5 mm, so their holes here are generous.
 //
-// So everything moved inboard:
-//   wall    flat plate, board bolts to its outer face, bottom edge stands on the desk
-//   spine   flat plate between the halves, with an upturned flange at its outer end that
-//           the wall bolts to face-to-face. Two handed halves, half-lapped and bolted
-//           through a hole row, so the distance between the halves stays adjustable.
-// No braces and no feet: a bolted face-to-face lap is already a moment connection, and the
-// wall's own bottom edge carries the vertical load straight to the desk.
+// THE FRAME. Every wall is drawn in a "standing" frame (u, v), in mm:
+//   u  height, 0 at the plate's bottom edge on the desk; the thumb cluster is at the top
+//   v  horizontal, 0 at the near (user's) end, where the thumb cluster is
+// Fixed against Drupchen's tracing of the right half's bottom, as seen from between the
+// halves when mounted: thumb cluster top right (top left on the left half). The right
+// plate fits that tracing at 0.8 mm rms in this frame; an earlier mapping had it
+// transposed (12 mm rms, holes that would not meet the board). to_uv() maps either ref
+// file into this frame, written for the LEFT half. The right half is built as the mirror image of a
+// left half (its plate mirrored into the left convention, then the whole half mirrored back
+// in assembly), so one set of modules serves both.
+// In this frame the two six-hole patterns are nearly mirror-identical (within ~2 mm), which
+// is why one set of band positions below clears both boards. The asserts check that.
 //
-// Why this is stable. A keypress pushes each half INWARD (the keys face outward at 90 deg),
-// so the halves lean on the spine and it takes the load in compression. Outward tipping
-// pivots about each wall's outer bottom edge and would have to lift the spine AND the other
-// half, which is a large restoring moment. The repo's own docs/check_results/stability.txt
-// shows a lone wedge-mounted half collapsing from 101 N at 20 deg to 3.4 N at 35 deg; at
-// 90 deg a lone half has essentially none left. Do not stand one of these up on its own.
+// THE HINGE. It folds INWARD: from 90 deg (standing) down to 0 deg (the wall lying on its
+// own plate, board on top, keys up) for the bag. The axis is not in the wall but just inboard
+// of it, at mid-thickness of the plate (hinge_axis()): the wall's knuckles are lobes that
+// reach hinge_gap + mat_t into the plate's plane, the plate's knuckles reach out to meet
+// them. Standing, every knuckle lies within the plate's thickness: flush top and bottom, and
+// the wall's foot stands on the desk unbroken. Folded, the wall lies hinge_gap above the
+// plate. The wall's inboard face stays hinge_gap + mat_t/2 from the axis at every angle and
+// the plate's knuckles are mat_t/2 round it, so nothing has to be cut out of the wall for
+// the fold: the clearance is geometric, not swept.
+// Nothing in the hinge stops it at 90. Inward, the haunches do. Outward, the board does:
+// it stands on the desk outboard of the wall, so the wall cannot fall outward without
+// lifting its plate, and the plate is held down by the other half through the lap. That
+// also means the hinge cannot open past 90 with the board on.
+// A 3 mm steel rod is the pin: it turns in the wall's knuckles and grips in the plate's.
+// The plate owns both end knuckles, and the two low board screws on each wall must land in
+// plate knuckles (asserted): in a wall knuckle the lobe stands in front of the screw head.
 //
-// Splay is built into the printed flange angle, not chosen at assembly. That is deliberate:
-// splay is the one measurement that cannot be rediscovered by feel, so it should be
-// impossible to reassemble wrong. Distance is the thing you adjust, via the hole row.
+// THE HAUNCHES. Two per half, separate flat triangles that slot in on the inboard side:
+// one tab into the wall, one into the plate, for location and shear; one M4 x 16 per leg, for
+// tension: at the top into a nut pocketed in the wall's board face (screw driven from the
+// haunch's edge, so nothing under the board is ever undone), at the foot up from the desk into
+// a nut in a cross-slot in the haunch. A keypress pushes each half
+// INWARD (keys face outward), which closes the corner: the haunch takes it in compression.
+// The board's weight hangs outboard of the hinge and tries to open the corner: the screws take
+// that, in tension: a few newtons. Two rather than one so that the wall cannot rack about a single
+// brace; spread as far as the board screws and the half-lap allow. The plate leg stops short
+// of the lap, where the other half's plate arrives (asserted).
 //
-// Board retention is a lip AND two bolts, with different jobs. The lip carries the weight
-// in compression; the bolts only stop the board lifting or being pulled off by working the
-// trackball. Clearance holes are provided at all five mount points - use whichever two or
-// three of yours line up.
+// STABILITY. A lone half has essentially no restoring moment at 90 deg (upstream's wedge
+// already tipped over under 7 N at 35 deg). The plates are what stop the keyboard falling over.
+// Never stand one half up on its own.
 //
-// Board geometry is still Microdox v1 (microdox_ref.scad). The Charybdis bolt pattern is
-// NOT measured yet, so nothing here is printable for a Charybdis. Retarget by replacing
-// PCB_OUTLINE / M2_HOLES in microdox_ref.scad; a pencil rubbing of the bottom plate gives
-// them 1:1. See README.
+// ASSEMBLY. Per half: board onto the wall FIRST, wall alone on the bench (screws from the
+// inboard side, through wall and plate into the case's inserts, countersunk: the length the
+// Bastardkb plate needed + 3 mm). With the plate on, its knuckles cover the low screws. Press
+// the wall nuts into their board-face pockets before the board too: it keeps them there. Then
+// push the pin through wall and plate knuckles, stand the wall up, drop in the haunches, screw
+// them (top from the haunch's edge, foot from under the plate). Then bring the halves
+// together, sliding the laps, and drop a lap_pin into each pair of lined-up holes. To pack,
+// board left on: lift the pins out, undo the haunch screws, lift the haunches out, fold each wall onto its own plate. Folded, a wall reaches ~150 mm inboard, past the lap, so
+// the halves cannot stay joined while folded.
+//
+// INPUTS: splay_deg and gap were confirmed at 90 deg on 2026-11-08 (see below).
 
-include <microdox_ref.scad>
-include <pad_ring_ref.scad>
+include <charybdis_ref.scad>
+include <scylla_ref.scad>
 
 vpart = "assembly";
 $fn   = 48;
@@ -44,218 +75,485 @@ $fn   = 48;
 /* ---------- material ---------- */
 mat_t = 6.0;            // every flat part is this thick
 fit   = 0.30;           // clearance added to slots and laps
+m3_clear = 3.4;
 
-/* ---------- splay ---------- */
-// Total included angle between the halves. README records ~28 deg per side / ~56 included,
-// but that was measured on the 58 deg rig and is STALE - re-measure before printing.
+/* ---------- splay and distance ---------- */
+// Total included angle between the halves: 28 deg per side, measured on the 58 deg rig and
+// confirmed by Drupchen at 90 deg (2026-11-08).
 splay_deg = 56;
+// Drupchen, 2026-11-08, at 90 deg: 22 cm between the keyboards' edges at their closest point,
+// which is the far end (the halves converge away from the user). With this splay and these
+// boards, board faces 220 mm apart there is 269.9 mm between the walls' inboard faces on the
+// centreline. He wants that as the MIDDLE of the range, free to go wider or narrower.
+// gap is NOT free: the two hole rows only meet where h1 + h2 == gap, so gap moves in
+// hole_pitch steps. usable_gaps() lists the ones with at least two bolts: 250..290 here,
+// 270 in the middle (asserted).
+gap        = 270;       // wall's inboard face to wall's inboard face, at the centreline
+rail_len   = 162;       // each half, wall's inboard face to inner tip; 54 mm of overlap
+lap_len    = 80;        // length of the half-thickness overlap region
+hole_pitch = 10;
 
 /* ---------- board mount ---------- */
-lip_z     = 10;         // board's bottom edge sits this high; keeps the lip under the USB port
-lip_t     = 5;          // thickness of the lip shelf
-lip_reach = 14;         // MEASURE: how far the lip must reach to sit under the case
-m2_hole_d = 2.6;        // M2 clearance (prints ~0.2 small)
-wall_rim  = 5;
-wall_boss = 14;
+board_screw_d = 3.4;    // the plate's holes are 4.0 with a countersink; stock screws are M3.
+                        // MEASURE: if yours are bigger, raise this (max 4.0)
+board_csk_d   = 10.0;   // Drupchen's board screws are the ones that fit the 3 mm Bastardkb
+board_seat_t  = 3.0;    // stand plate, so each hole copies that plate's seat: a ~90 deg
+                        // countersink ~10 mm across with 3 mm of material under it (measured
+                        // from plate.3mf), sunk in a counterbore so the 6 mm wall takes the
+                        // SAME screws. The head sits 3 mm below the inboard face.
+board_screws_used = [0, 1, 4, 5];   // of the ref's six: the two top and the two bottom, the
+                        // four the Bastardkb wrist-pad stand plate uses (same indices on both
+                        // plates). The other two would land in open frame.
+wall_boss = 16;         // solid land round every board screw: the 10 mm seat + 3 mm each side
+wall_bar  = 10;         // width of the wall frame's members
+wall_fillet = 4;        // radius filling the frame's inside corners
+head_r    = 3.5;        // board-screw head radius plus a little, for clash checks
 
-/* ---------- spine ---------- */
-// gap is NOT free: the two hole rows only meet where h1 + h2 == gap, so gap moves in
-// hole_pitch steps. The assert below lists the values that actually work.
-gap        = 156;       // assembled flange-face to flange-face distance
-spine_len  = 100;       // each half, flange face to inner tip
-spine_w    = 88;
-lap_len    = 70;        // length of the half-thickness overlap region
-hole_pitch = 10;
-flange_h   = 38;
-flange_t   = 6;
-m3_clear   = 3.4;
+/* ---------- where things go, in the standing frame (u, v) ---------- */
+reset_reach = 2.5;          // clearance round the reset tab; clash checks keep 2 mm more
+foot_h     = 14;            // the wall's foot strip, up from the desk: hinge and bottom screws
+v_c        = 90;            // the v that lands on the rails' centreline (world y = 0)
+foot_v     = [42, 139];     // the wall's bottom edge on the desk = the hinge's length
+spine_plate_v = [42, 139];  // the spine plate's width, across the rail
 
-BOARD_U = 100.092;      // board extent along the tenting axis -> vertical
-BOARD_V =  93.384;      // board extent along the fingers      -> horizontal
-FOOT_Y  = [4.0, 88.5];  // y span of the board outline at its bottom edge, with slack
+/* ---------- the hinge ---------- */
+// A knuckle hinge exactly as thick as the plate, its axis at the plate's mid-thickness, just
+// inboard of the wall. It folds from 90 deg (standing) to 0 deg (wall lying on its plate).
+// Five knuckles: the plate owns the two ends and the middle; the wall the two between.
+pin_d       = 3.0;      // steel rod, cut to the hinge's length
+hinge_gap   = 0.5;          // air between the wall's inboard face and the plate's knuckles
+pin_fit     = 0.3;      // the wall's knuckles turn on the pin; the plate's grip it
+n_knuckles  = 5;           // 7 left no knuckle wide enough for a 10 mm screw seat
 
-// Negative so that positive splay_deg means the same here as in microdox_ref.scad's
-// place_half(): the halves converge away from you, matching how the forearms come in.
-// If the tracing says otherwise, pass a negative splay_deg rather than editing this.
-function a_half()   = -splay_deg / 2;
-function overlap()  = 2 * spine_len - gap;
-function bolt_vs()  = [BOARD_V / 2 - 26, BOARD_V / 2 + 26];
-function bolt_us()  = [mat_t - lip_z + 6, mat_t - lip_z + flange_h - 12];
-function spine_y(v) = v - BOARD_V / 2;          // wall's v axis -> spine's y axis
+/* ---------- the haunches ---------- */
+// Separate knee braces, two per half, each a flat 6 mm triangle in the plane normal to the
+// hinge, as tall as the wall allows: its top sits just under the board's top screws. It
+// joins wall and plate only at its two far ends: a tab into a slot near the top of the wall
+// and one M4 screw, a tab into the plate at the leg's end and one M4 screw. So it is a
+// triangular frame, open in the middle: three members, pads at the joints.
+haunch_vs   = [64, 103];    // v of each haunch's near face; between the hinge's end
+                            // screws, clear of every board feature
+haunch_len  = 30;           // along the plate from the wall's inboard face; capped by the lap
+haunch_h    = 108;          // up the wall from the plate's top face; under the top screws
+haunch_pad  = [14, 34];     // the top pad, [x' wide, z tall]: wall tab and bolt live in it
+haunch_bar  = 7;            // width of the frame's members
+haunch_chamfer = 1.5;       // inner corner, clear of the hinge's fit
+wall_tab_z  = [haunch_h - 30, haunch_h - 16];   // tab into the wall, up from the plate's top
+plate_tab_x = [8, 15];      // tab into the plate, measured in from the wall's inboard face
+wall_bolt_z = haunch_h - 9; // wall-leg bolt, up from the plate's top face
+plate_bolt_x= 21;           // plate-leg bolt, in from the wall's inboard face
+tab_d       = mat_t - 0.6;  // tabs stop short of the board behind the wall and of the desk
+haunch_t    = 8;            // thicker than mat_t: an M4 runs along its plane, the nut stands in it
+// Drupchen's screws: the 8 M4 x 16 socket-head screws and nuts from the Bastardkb stand's
+// hinges (measured from its plate.3mf: 4.2 bore, 7.0 mm nut pocket; length by ruler).
+m4_clear    = 4.4;
+m4_nut_af   = 7.0;
+m4_nut_t    = 3.2;
+m4_head_d   = 7.0;
+m4_head_k   = 4.0;
+m4_len      = 16;           // under the head
+tip_in      = 0.5;          // the tip stops this far inside the nut's outer face
+// Wall joint: the nut sits in a hex pocket on the wall's BOARD face, under the board, so it is
+// pulled against the wall when tightened (a pocket on the inboard face would just let go);
+// the screw goes in from the haunch's outer edge, its head in a notch there.
+wall_nut_d  = m4_nut_t + 0.3;                       // pocket depth from the board face
+wall_head_x = m4_len - (mat_t - tip_in);            // x' of the head's seat in the haunch
+// Just under the head, the bore narrows to a ring the screw's thread cuts its way through
+// once; past it the screw turns free but cannot fall out, so it stays in the haunch when the
+// stand is packed.
+keep_d      = 3.7;
+keep_l      = 2.5;
+// Plate joint: the screw comes up from under the plate, its head in a counterbore, into a nut
+// standing in a cross-slot in the haunch's foot.
+plate_cb_d  = m4_head_k + 0.3;                      // counterbore depth from the desk face
+foot_tip_z  = plate_cb_d + m4_len - mat_t;          // tip, above the plate's top face
 
-assert(mat_t >= 4, "mat_t must be >= 4 mm; thinner plates flex under a keypress at this height");
-assert(overlap() >= 15 && overlap() <= lap_len,
-       str("overlap is ", overlap(), " mm; must be 15..", lap_len, ". Change gap or spine_len."));
-assert(len(aligned_hs()) >= 2,
-       str("gap ", gap, " mm does not line the two bolt rows up. Usable gaps: ", usable_gaps()));
-assert(lip_reach > 0, "lip_reach is a MEASURE value - set it from the case before printing");
+/* ================= the boards in the standing frame ================= */
+function to_uv(side, p) = side == "left"
+    ? [p[1], p[0]]                                         // Scylla
+    : [CB_PLATE_SIZE[1] - p[1], p[0]];                     // Charybdis, mirrored to a left
+function uvs(side, pts)     = [for (p = pts) to_uv(side, p)];
+function b_outline(side)    = uvs(side, side == "left" ? SC_OUTLINE : CB_OUTLINE);
+function b_screws(side)     = let(a = uvs(side, side == "left" ? SC_SCREWS : CB_SCREWS))
+                              [for (i = board_screws_used) a[i]];
+function top_screws(side)   = [for (h = b_screws(side)) if (h[0] > foot_h) h];
+// reset plunger and cable opening: [centre, size]. Both mappings swap the ref's x and y,
+// so a bbox's [x, y] size becomes [v, u] here: reverse it.
+function swap(s) = [s[1], s[0]];
+function b_reset(side)  = side == "left" ? [to_uv(side, SC_RESET),  swap(SC_RESET_BBOX)]
+                                         : [to_uv(side, CB_RESET),  swap(CB_RESET_BBOX)];
+function b_square(side) = side == "left" ? [to_uv(side, SC_SQUARE), swap(SC_SQUARE_BBOX)]
+                                         : [to_uv(side, CB_SQUARE), swap(CB_SQUARE_BBOX)];
+function plate_t(side)  = side == "left" ? SC_PLATE_T : CB_PLATE_T;
 
-/* ================= wall ================= */
-// Print frame: local x = u (0 at the board's bottom edge, vertical in use), local y = v,
-// extruded in local z by mat_t. The board goes on the +z face, so in use the keys face
-// outward. The lip stands up from that same face at the bottom.
-module wall2d() difference() {
-    union() {
-        offset(r = 1.5) pcb_outline();
-        translate([-lip_z, FOOT_Y[0]]) square([lip_z + 1, FOOT_Y[1] - FOOT_Y[0]]);  // down to the desk
-    }
-    offset(r = 4) offset(delta = -4) difference() {                 // lightening, soft corners
-        offset(delta = -wall_rim) pcb_outline();
-        for (h = M2_HOLES) translate(h) circle(d = wall_boss);      // land round every mount point
-        translate(CTRL_ZONE[0] - [2, 2]) square(CTRL_ZONE[1] - CTRL_ZONE[0] + [4, 4]);
-        for (v = bolt_vs()) translate([-lip_z - 1, v - 11]) square([flange_h + 6, 22]);  // keep the bolt band solid
-    }
-    for (h = M2_HOLES) translate(h) circle(d = m2_hole_d);          // board screws: use any two or three
-    for (v = bolt_vs()) for (u = bolt_us()) translate([u, v]) circle(d = m3_clear);  // to the flange
+module board2d(side) polygon(b_outline(side));
+module feature2d(f, grow) translate(f[0] - f[1] / 2 - [grow, grow])
+    offset(r = 1.5) offset(delta = -1.5) square(f[1] + 2 * [grow, grow]);
+
+/* ================= the hinge frame ================= */
+// Everything at the joint is drawn in the HINGE FRAME: the rail frame turned by a_half(), so
+//   x'  across the hinge, 0 at the wall's inboard face, + toward the plate (inboard)
+//   y'  along the hinge, = v - v_c
+//   z   height above the desk
+// The wall stands in x' in [-mat_t, 0]; the plate lies in z in [0, mat_t]. The axis is at
+// x' = hinge_gap + mat_t/2, z = mat_t/2. Folding turns the wall inward about it, so at 0 deg
+// the wall lies on the plate, inboard face down, hinge_gap above it.
+function a_half()     = -splay_deg / 2;    // + converges the halves away from the user
+function overlap()    = 2 * rail_len - gap;
+function rail_y(v)    = v - v_c;           // wall v -> hinge y'
+function lap_start()  = rail_len - lap_len;
+function hinge_axis() = [hinge_gap + mat_t / 2, mat_t / 2];               // (x', z)
+function hinge_ys()   = [rail_y(foot_v[0]), rail_y(foot_v[1])];
+function knuckle(i)   = let(y = hinge_ys(), w = (y[1] - y[0]) / n_knuckles)
+                        [y[0] + i * w, y[0] + (i + 1) * w];
+function plate_knuckles() = [for (i = [0 : 2 : n_knuckles - 1]) knuckle(i)];   // owns the ends
+function wall_knuckles()  = [for (i = [1 : 2 : n_knuckles - 1]) knuckle(i)];
+// hinge frame (x', y') -> rail frame (x, y)
+function to_rail(p) = [p[0] * cos(a_half()) - p[1] * sin(a_half()),
+                       p[0] * sin(a_half()) + p[1] * cos(a_half())];
+
+// a 2D profile in (x', z), extruded along y' from y0 to y1
+module along(y0, y1) translate([0, y1, 0]) rotate([90, 0, 0]) linear_extrude(y1 - y0) children();
+// the wall turned about the axis; phi = 90 standing, 0 folded onto the plate
+module wall_pose(phi) let(A = [hinge_axis()[0], 0, hinge_axis()[1]])
+    translate(A) rotate([0, -(phi - 90), 0]) translate(-A) children();
+// where the plate's body begins, everywhere along the hinge: clear of the wall's lobes
+function plate_start() = hinge_axis()[0] + mat_t / 2 + fit;
+
+// The plate's knuckle: round on the outboard side, square into the plate.
+module plate_knuckle2d() hull() {
+    translate(hinge_axis()) circle(d = mat_t);
+    translate([hinge_axis()[0], 0]) square([plate_start() - hinge_axis()[0] + 1, mat_t]);
 }
-module wall() {
-    linear_extrude(mat_t) wall2d();
-    translate([-lip_t, FOOT_Y[0] + 2, mat_t])                       // the lip the board rests on
-        cube([lip_t, FOOT_Y[1] - FOOT_Y[0] - 4, lip_reach]);
+// The wall's knuckle: the wall's foot carried round the axis. Turned about the axis it only
+// ever turns inside itself or away from the plate (dx <= 0), so it needs no sweep cut.
+module wall_knuckle2d() hull() {
+    translate([-mat_t, 0]) square([mat_t + hinge_axis()[0], mat_t]);
+    translate(hinge_axis()) circle(d = mat_t);
 }
-// Stand it up: local x -> world z, local z -> world -x, so the wall occupies x in
-// [-mat_t, 0] - outboard of the flange, whose outer face is at x = 0 - and the board and
-// lip sit further out still. Bottom edge lands on z = 0 and carries the load to the desk.
-module wall_in_use() translate([0, -BOARD_V / 2, lip_z]) rotate([0, -90, 0]) wall();
 
-/* ================= spine ================= */
-// Print frame: plate lies in XY from the flange plane out to +x, flange standing up at the
-// outer end. The flange plane is rotated by half the splay about z, so the wall bolted to it
-// comes out splayed and nothing has to be aimed by eye at assembly.
-module outboard_cut(h) rotate([0, 0, a_half()]) translate([-300, -300, -1]) cube([300, 600, h + 2]);
-module spine_plate2d() difference() {
+/* ================= the spine (the plate on the desk) ================= */
+// Print frame = rail frame: plate in XY, the hinge edge rotated by a_half(), the other half's
+// plate lapping over the inner end. The hinge edge stops fit short of the wall's lobes.
+module rail_plate2d() intersection() {
     offset(r = -5) offset(delta = 5)
-        translate([-30, -spine_w / 2]) square([spine_len + 30, spine_w]);
-    projection(cut = false) outboard_cut(1);                 // trim flush with the flange plane
+        translate([-90, rail_y(spine_plate_v[0])])
+            square([rail_len + 90, spine_plate_v[1] - spine_plate_v[0]]);
+    rotate(a_half()) translate([plate_start(), -300]) square(600);
 }
-// Only outside the lap: in the overlap each plate is half thickness and every bit of it is
-// bolted bearing area, so holes there would cost stiffness exactly where the joint needs it.
-module spine_lightening() for (s = [-1, 1])
-    translate([18, s * 23, -1]) linear_extrude(mat_t + 2)
-        offset(r = 5) offset(delta = -5) square([18, 34], center = true);
-module lap_relief() translate([spine_len - lap_len, -spine_w / 2 - 1, mat_t / 2])
-    cube([lap_len + 1, spine_w + 2, mat_t]);
+module lap_relief() translate([lap_start(), rail_y(spine_plate_v[0]) - 1, mat_t / 2])
+    cube([lap_len + 1, spine_plate_v[1] - spine_plate_v[0] + 2, mat_t]);
 // Both halves carry the same row, so a hole at h on one meets a hole at gap - h on the
 // other. Mirrored parts, so the rows are counter-running: only some gaps line up at all.
 function n_lap()  = floor((lap_len - 16) / hole_pitch);
-function lap_h(i) = spine_len - lap_len + 8 + i * hole_pitch;
+function lap_h(i) = lap_start() + 8 + i * hole_pitch;
 function aligned_hs() = [for (i = [0:n_lap()]) for (j = [0:n_lap()])
                          if (abs(lap_h(i) + lap_h(j) - gap) < 0.01) lap_h(i)];
+function n_aligned(g) = len([for (i = [0:n_lap()]) for (j = [0:n_lap()])
+                             if (abs(lap_h(i) + lap_h(j) - g) < 0.01) 1]);
 function usable_gaps() = [for (g = [2*lap_h(0) : hole_pitch : 2*lap_h(n_lap())])
-                          if (2*spine_len - g >= 15 && 2*spine_len - g <= lap_len) g];
+                          if (2*rail_len - g >= 15 && 2*rail_len - g <= lap_len
+                              && n_aligned(g) >= 2) g];
+// What goes through each pair of lined-up holes: a printed pin, head on the upper plate, its
+// tip short of the desk. It only has to take the lap's shear (holding the halves at their
+// distance and splay); gravity and the boards keep the halves down on the desk.
+pin_shaft = m3_clear - 0.3;
+pin_head  = [6.5, 1.5];
+module lap_pin() {
+    cylinder(d = pin_head[0], h = pin_head[1]);
+    translate([0, 0, pin_head[1] - 0.01]) cylinder(d = pin_shaft, h = mat_t - 0.3 - 0.4 + 0.01);
+    translate([0, 0, pin_head[1] + mat_t - 0.3 - 0.4]) cylinder(d1 = pin_shaft, d2 = pin_shaft - 0.8, h = 0.4);
+}
 module lap_holes() for (i = [0 : n_lap()])
     translate([lap_h(i), 0, -1]) cylinder(d = m3_clear, h = mat_t + 2);
-module flange() rotate([0, 0, a_half()]) translate([0, -84 / 2, mat_t])
-    cube([flange_t, 84, flange_h - mat_t]);
-module flange_holes() rotate([0, 0, a_half()]) for (v = bolt_vs()) for (u = bolt_us())
-    translate([-1, spine_y(v), u + lip_z]) rotate([0, 90, 0]) cylinder(d = m3_clear, h = flange_t + 2);
 
+// The plate lies on the desk, which carries it everywhere, so it needs no bending stiffness:
+// only the paths that carry load stay solid. A rim, the hinge strip, each haunch's foot (tab
+// and bolt), and a bar down the centreline that carries the lap bolts and ties the halves.
+spine_rim = 8;
+module spine_pockets2d() offset(r = 4) offset(delta = -4) difference() {
+    offset(delta = -spine_rim) rail_plate2d();
+    rotate(a_half()) translate([-50, -200]) square([plate_start() + 12 + 50, 400]);   // hinge strip
+    rotate(a_half()) for (v = haunch_vs)
+        translate([0, rail_y(v) - 8]) square([haunch_len + 8, haunch_t + 16]);      // haunch feet
+    translate([-100, -8]) square([300, 16]);                                         // centre bar
+}
 // handed: "a" is relieved on its top face, "b" on its bottom, so the two half-lap together.
-module spine_half(hand = "a") difference() {
+module rail_half(hand = "a") difference() {
     union() {
         difference() {
-            linear_extrude(mat_t) spine_plate2d();
-            if (hand == "a") lap_relief();          // keeps the lower half
-            else translate([0, 0, -mat_t]) lap_relief();   // keeps the upper half
-            spine_lightening();
+            linear_extrude(mat_t) rail_plate2d();
+            if (hand == "a") lap_relief();
+            else translate([0, 0, -mat_t]) lap_relief();
         }
-        flange();
+        rotate([0, 0, a_half()]) for (k = plate_knuckles())
+            along(k[0] + fit / 2, k[1] - fit / 2) plate_knuckle2d();
     }
     lap_holes();
-    flange_holes();
-}
-
-/* ================= rest kit ================= */
-// Replaces pads-base from Bastardkb/charybdis (files/mods/tenting-stand-with-wrist-pads),
-// which is a 28 mm hollow kidney weighing ~51 g. The part Drupchen kept is pads-holder:
-// a bare 10 mm bezel with no screw holes, no tabs and no bosses - it only traps the gel
-// pad's rim, so dropping the body dropped the only part with a mounting interface.
-// The profile here is sliced from that bezel's own mesh (see pad_ring_ref.scad), so the
-// ring drops straight in rather than being fitted to a guess.
-//
-// rest_lift is a MEASURE value and currently 0. At 90 deg the hand meets the board much
-// higher than it did at 58 deg, so the rest almost certainly needs raising - but by how
-// much is one of the open questions in the README, and a wrong guess here is a reprint.
-// At 0 this is a flat tray. Raise it and the tray grows a thin open skirt, still far
-// lighter than the original body because the walls are 3 mm and the bottom is open.
-carrier_t    = 3.5;     // floor the gel pad sits on
-carrier_rim  = 3.0;     // upstand the bezel drops into
-carrier_wall = 3.0;     // skirt wall thickness when lifted
-rest_lift    = 0;       // MEASURE: height under the pad
-arm_w        = 24;      // adjustable blade
-arm_len      = 140;
-arm_pitch    = 10;
-
-function ring_pad()  = carrier_rim + 1.5;                       // material outside the bezel
-function carrier_h() = rest_lift + carrier_t;
-function arm_bolt_ys() = [14, 32];      // along the carrier's long axis, x on centreline
-function carrier_cx()  = 41.5;          // centre of the measured bezel profile
-function carrier_cy()  = 60.0;
-
-module carrier_outer2d() offset(delta = ring_pad()) pad_ring_outline();
-module carrier() {
-    cx = 0; cy = 0;
-    difference() {
-        union() {
-            if (rest_lift > 0)                                  // open skirt, bottom open
-                linear_extrude(rest_lift) difference() {
-                    carrier_outer2d();
-                    offset(delta = -carrier_wall) carrier_outer2d();
-                }
-            translate([0, 0, rest_lift]) linear_extrude(carrier_t) carrier_outer2d();
-            translate([0, 0, carrier_h()]) linear_extrude(carrier_rim) difference() {
-                carrier_outer2d();
-                offset(delta = 0.4) pad_ring_outline();         // the bezel drops in here
+    translate([0, 0, -1]) linear_extrude(mat_t + 2) spine_pockets2d();
+    rotate([0, 0, a_half()]) {
+        translate([hinge_axis()[0], 0, hinge_axis()[1]]) rotate([90, 0, 0])
+            cylinder(d = pin_d, h = 400, center = true);           // the pin, a grip fit
+        for (v = haunch_vs) let(y0 = rail_y(v)) {
+            translate([plate_tab_x[0] - fit / 2, y0 - fit / 2, -1])  // tab slot, through
+                cube([plate_tab_x[1] - plate_tab_x[0] + fit, haunch_t + fit, mat_t + 2]);
+            translate([plate_bolt_x, y0 + haunch_t / 2, 0]) {        // M4, head sunk below
+                translate([0, 0, -1]) cylinder(d = m4_clear, h = mat_t + 2);
+                translate([0, 0, -1]) cylinder(d = m4_head_d + 0.6, h = plate_cb_d + 1);
             }
         }
-        // lightening under the pad, kept small so the gel cannot bulge through
-        // kept clear of the bolt line at the narrow end
-        for (p = [[-13, 32], [13, 32], [0, 2]])
-            translate([p[0] + carrier_cx(), p[1] + carrier_cy(), rest_lift - 1])
-                linear_extrude(carrier_t + 2) offset(r = 5) offset(delta = -5) circle(d = 26);
-        // arm bolts, through the floor
-        for (y = arm_bolt_ys()) translate([carrier_cx(), y, rest_lift - 1])
-            cylinder(d = m3_clear, h = carrier_t + 2);
     }
 }
 
-// A plain blade with a hole row at each end: one end bolts up into the carrier floor, the
-// other goes wherever the rest turns out to belong. Deliberately not committed to a fixing
-// point on the stand - that waits on the same measurement as rest_lift.
-module rest_arm() difference() {
-    linear_extrude(mat_t) offset(r = 4) offset(delta = -4)
-        translate([-arm_w / 2, 0]) square([arm_w, arm_len]);
-    for (y = arm_bolt_ys()) translate([0, y, -1]) cylinder(d = m3_clear, h = mat_t + 2);
-    for (i = [0 : floor((arm_len - 75) / arm_pitch)])
-        translate([0, 58 + i * arm_pitch, -1]) cylinder(d = m3_clear, h = mat_t + 2);
+/* ================= the haunch ================= */
+// Drawn in (x', z): x' from the wall's inboard face, z from the desk. Printed flat.
+function haunch_outer(t, L, H, c) = [[c, t], [L, t], [L, t + 8], [haunch_pad[0], t + H],
+                                      [0, t + H], [0, t + c]];
+module haunch2d() let(t = mat_t, L = haunch_len, H = haunch_h, c = haunch_chamfer,
+                      ac = m4_nut_af / cos(30) + fit, nt = m4_nut_t + fit,
+                      hr = m4_head_d / 2 + 0.5) difference() {
+    union() {
+        polygon(haunch_outer(t, L, H, c));
+        translate([-tab_d, t + wall_tab_z[0]]) square([tab_d + 0.01, wall_tab_z[1] - wall_tab_z[0]]);
+        translate([plate_tab_x[0], t - tab_d]) square([plate_tab_x[1] - plate_tab_x[0], tab_d + 0.01]);
+    }
+    // the open middle: the triangle shrunk by one member width, minus the two joint pads
+    offset(r = 2) offset(delta = -2) difference() {
+        offset(delta = -haunch_bar) polygon(haunch_outer(t, L, H, c));
+        translate([-1, t + H - haunch_pad[1]]) square([L + 2, haunch_pad[1] + 1]);     // top pad
+        translate([plate_tab_x[0] - haunch_bar, t - 1])                                // plate pad
+            square([L, foot_tip_z + 1 + haunch_bar]);
+    }
+    // wall joint: the head's notch in the outer edge (the bore is drilled in haunch())
+    translate([wall_head_x, t + wall_bolt_z - hr]) square([L, 2 * hr]);
+    // plate joint (T-slot): the nut standing in a cross-slot
+    translate([plate_bolt_x - ac / 2, t + foot_tip_z - tip_in - nt]) square([ac, nt]);
+}
+// The bores are round holes inside the plate, not 2D slots: cut through the thickness, the
+// wall bore and the head's notch together would cut the top pad off.
+module haunch() let(t = mat_t) difference() {
+    linear_extrude(haunch_t) haunch2d();
+    translate([-1, t + wall_bolt_z, haunch_t / 2]) rotate([0, 90, 0])
+        cylinder(d = m4_clear, h = wall_head_x - keep_l + 1.01);
+    translate([wall_head_x - keep_l, t + wall_bolt_z, haunch_t / 2]) rotate([0, 90, 0])
+        cylinder(d = keep_d, h = keep_l + 1);       // the ring that keeps the screw
+    translate([plate_bolt_x, t - 1, haunch_t / 2]) rotate([-90, 0, 0])
+        cylinder(d = m4_clear, h = foot_tip_z + 2);
+}
+// in the hinge frame, its near face at y' = rail_y(v)
+// in the hinge frame, its near face at y' = rail_y(v). The key haunch is turned over so its
+// clip is on the far face, away from the user (the haunch is symmetric about its mid-plane,
+// so turned over it is the same part).
+module haunch_at(v, key = false) translate([0, rail_y(v) + haunch_t, 0]) rotate([90, 0, 0])
+    if (key) translate([0, 0, haunch_t]) mirror([0, 0, 1]) haunch_key(); else haunch();
+
+/* ---------- the hex key's clip, on one haunch ---------- */
+// Drupchen's key for the M4 screws: a 3 mm L-key, long leg ~56 mm, short leg ~19 mm (ruler
+// photos). It rides on the haunch's wall-side bar, long leg vertical, bend at the top: two
+// snap channels hold it, and a block under the tip stops it sliding down. Lifting it out means
+// pushing it back through the lips.
+key_af     = 3.0;
+key_long   = 56;            // outside of the bend to the tip
+key_top    = mat_t + haunch_h - haunch_pad[1] - 2;   // outside of the bend, height above desk
+key_ch     = [3.7, 3.2];    // channel inside: width (a hex lying on a flat is 3.46 wide), depth
+key_lip    = [2.6, 1.2];    // gap between the lips (< 3.46, so it snaps), lip height
+key_wall   = 1.2;
+key_x      = haunch_bar / 2;            // along the wall-side bar
+key_clips  = [[key_top - 12, 8], [key_top - key_long + 8, 8]];   // [top, length] of each
+function key_w() = key_ch[0] + 2 * key_wall;
+module key_channel2d() let(w = key_w(), h = key_ch[1] + key_lip[1]) difference() {
+    translate([-w / 2, 0]) square([w, h]);
+    translate([-key_ch[0] / 2, -1]) square([key_ch[0], key_ch[1] + 1]);
+    polygon([[-key_lip[0] / 2, key_ch[1] - 0.01], [key_lip[0] / 2, key_ch[1] - 0.01],   // lead-in
+             [w / 2 - 0.5, h + 0.01], [-(w / 2 - 0.5), h + 0.01]]);
+}
+// on the haunch's +z face, in the haunch's own frame (x = x', y = height above the desk)
+module key_clip() translate([key_x, 0, haunch_t]) {
+    for (c = key_clips) translate([0, c[0], 0]) rotate([90, 0, 0])
+        linear_extrude(c[1]) key_channel2d();
+    translate([-key_w() / 2, key_top - key_long - 1.5 - 4, 0])          // under the tip
+        cube([key_w(), 4, key_ch[1] + key_lip[1]]);
+}
+module haunch_key() { haunch(); key_clip(); }
+
+/* ================= wall ================= */
+// Print frame: local x = u, local y = v, extruded in z by mat_t, inner face down on the bed.
+// The board goes on the +z face (keys face outward in use). Board screws are countersunk from
+// the inner face; the haunch screws' nuts sit in pockets in the board face, under the board.
+function box_grow(b, g) = [b[0] - [g, g], b[1] + [g, g]];
+module box2d(b) translate(b[0]) square(b[1] - b[0]);
+// what a haunch puts on the wall, [[u0, v0], [u1, v1]]
+function haunch_box(v)    = [[mat_t, v], [mat_t + haunch_h, v + haunch_t]];
+function haunch_pad_box(v) = [[mat_t + haunch_h - haunch_pad[1], v], [mat_t + haunch_h, v + haunch_t]];
+function wall_slot_box(v) = [[mat_t + wall_tab_z[0] - fit / 2, v - fit / 2],
+                             [mat_t + wall_tab_z[1] + fit / 2, v + haunch_t + fit / 2]];
+function wall_bolt_uv(v)  = [mat_t + wall_bolt_z, v + haunch_t / 2];
+wall_nut_r = (m4_nut_af + 0.2) / cos(30) / 2;      // the board covers it, so no press fit
+
+// The wall is a frame along the load paths, not a sheet the board's shape: the board's case
+// is the stiff member, and the wall only has to carry four screws to two places. The bottom
+// screws go into the foot, which is the hinge. The top screws go across to the haunch pads,
+// which the haunches take down to the plate. A column on each haunch's line joins pad to
+// foot, and a bar joins the two top screws, so the wall is one closed piece.
+function nearest_pad_v(h) = let(d = [for (v = haunch_vs) abs(v + haunch_t / 2 - h[1])])
+                            haunch_vs[search(min(d), d)[0]];
+module column2d(v) translate([0, v + haunch_t / 2 - wall_bar / 2])
+    square([mat_t + haunch_h, wall_bar]);
+module wall2d(side, screw_holes = true) difference() {
+    intersection() {
+        offset(r = -wall_fillet) offset(r = wall_fillet) union() {
+            translate([0, foot_v[0]]) square([foot_h, foot_v[1] - foot_v[0]]);   // foot = hinge
+            for (h = b_screws(side)) translate(h) circle(d = wall_boss);
+            for (v = haunch_vs) { column2d(v); box2d(box_grow(haunch_pad_box(v), 7)); }
+            for (h = top_screws(side)) hull() {                   // top screw -> its pad
+                translate(h) circle(d = wall_boss);
+                box2d(box_grow(haunch_pad_box(nearest_pad_v(h)), 7));
+            }
+            let(ts = top_screws(side)) for (i = [0 : len(ts) - 2]) hull() {
+                translate(ts[i]) circle(d = wall_bar);              // top screw <-> top screw
+                translate(ts[i + 1]) circle(d = wall_bar);
+            }
+        }
+        translate([0, -500]) square(1000);                        // nothing below the desk
+    }
+    if (screw_holes) for (h = b_screws(side)) translate(h) circle(d = board_screw_d);
+    feature2d(b_reset(side), reset_reach);  // reach the reset tab from inboard with a pen
+    feature2d(b_square(side), 1.0);         // whatever lives in the cable opening keeps its room
+    for (v = haunch_vs) box2d(wall_slot_box(v));
+}
+// Through-hole and countersink as ONE revolved solid, head at z = mat_t. Cut separately, the
+// two meet on coincident circles and leave a seamed mesh.
+module csk_hole(d, dk) let(h = (dk - d) / 2)
+    translate([0, 0, -1]) rotate_extrude() polygon([[0, 0], [d / 2, 0],
+        [d / 2, mat_t + 1 - h], [dk / 2 + 0.05, mat_t + 1.05], [0, mat_t + 1.05]]);
+// The board screw's seat: hole, 90 deg countersink, counterbore, as ONE revolved solid.
+// Drawn with z = 0 at the board face; wall_flat flips it, because there the board is on +z
+// and the screw goes in from the inboard face, z = 0.
+module board_seat() let(d = board_screw_d, dk = board_csk_d, s = board_seat_t,
+                        zd = s - (dk - d) / 2)                  // where the cone meets the hole
+    rotate_extrude() polygon([[0, -1], [d / 2, -1], [d / 2, zd], [dk / 2, s],
+        [dk / 2 + 0.2, s], [dk / 2 + 0.2, mat_t + 1], [0, mat_t + 1]]);
+module wall_flat(side) difference() {
+    linear_extrude(mat_t) wall2d(side, screw_holes = false);   // the countersinks cut them
+    for (h = b_screws(side)) translate([h[0], h[1], mat_t]) mirror([0, 0, 1])
+        board_seat();                                             // heads on the inboard face
+    for (v = haunch_vs) translate(wall_bolt_uv(v)) {                // M4 nut, under the board
+        translate([0, 0, -1]) cylinder(d = m4_clear, h = mat_t + 2);
+        translate([0, 0, mat_t - wall_nut_d]) rotate(30) cylinder(r = wall_nut_r, h = wall_nut_d + 1, $fn = 6);
+    }
+}
+// Stand it up: local x -> z, local z -> -x', so the wall occupies x' in [-mat_t, 0] and the
+// board sits outboard of it. u = 0 is the desk.
+module in_use() translate([0, -v_c, 0]) rotate([0, -90, 0]) children();
+module from_use() rotate([0, 90, 0]) translate([0, v_c, 0]) children();
+// The wall with its half of the hinge, in the hinge frame, standing.
+module wall_hinged(side) difference() {
+    union() {
+        in_use() wall_flat(side);
+        for (k = wall_knuckles()) along(k[0] + fit / 2, k[1] - fit / 2) wall_knuckle2d();
+    }
+    translate([hinge_axis()[0], 0, hinge_axis()[1]]) rotate([90, 0, 0])
+        cylinder(d = pin_d + pin_fit, h = 600, center = true);    // turns on the pin
+}
+// Export frame: flat, BOARD FACE DOWN, so the lobes stand up off the bed with the pin hole
+// horizontal. A rotation, not a mirror: the hand is kept.
+module wall(side) translate([0, 0, mat_t]) rotate([180, 0, 0]) from_use() wall_hinged(side);
+
+/* ================= clash checks ================= */
+function overlaps(a, b) = a[0][0] < b[1][0] && b[0][0] < a[1][0]
+                       && a[0][1] < b[1][1] && b[0][1] < a[1][1];
+function pt_box(p, r)  = [p - [r, r], p + [r, r]];
+function f_box(f, g)   = [f[0] - f[1] / 2 - [g, g], f[0] + f[1] / 2 + [g, g]];
+// Everything a haunch puts on the wall: its body, the slot, the nut pocket under the board.
+function haunch_boxes(v) = [haunch_box(v), wall_slot_box(v), pt_box(wall_bolt_uv(v), wall_nut_r)];
+function clashes(side) = [
+    for (v = haunch_vs) for (b = haunch_boxes(v)) each concat(
+        [for (h = b_screws(side)) if (overlaps(b, pt_box(h, wall_boss / 2))) str("screw ", h)],
+        [for (f = [b_reset(side), b_square(side)]) if (overlaps(b, f_box(f, reset_reach + 2))) str("opening ", f[0])])];
+// A board screw low enough to meet the hinge zone must sit in one of the plate's knuckles:
+// in a wall knuckle the lobe stands in front of its head (and the plate's knuckle covers it
+// once fitted, which is why the board goes on first).
+function low_screws(side) = [for (h = b_screws(side)) if (h[0] - board_csk_d / 2 - 0.2 < mat_t + 2) h];
+function in_plate_knuckle(h) = len([for (k = plate_knuckles())
+    if (rail_y(h[1]) - board_csk_d / 2 - 0.2 >= k[0] + fit && rail_y(h[1]) + board_csk_d / 2 + 0.2 <= k[1] - fit) 1]) > 0;
+// the haunch's plate leg must stop before the other half's plate can arrive over the lap
+function haunch_tip_x(v) = max([for (y = [rail_y(v), rail_y(v) + haunch_t]) to_rail([haunch_len, y])[0]]);
+function haunch_lap_margin() = lap_start() - 1 - max([for (v = haunch_vs) haunch_tip_x(v)]);
+
+assert(board_seat_t - (board_csk_d - board_screw_d) / 2 > -1, "board seat's cone runs out");
+assert(mat_t >= 4, "mat_t must be >= 4 mm; thinner plates flex under a keypress at this height");
+assert(let(u = usable_gaps()) gap == u[floor(len(u) / 2)] && len(u) % 2 == 1,
+       str("gap ", gap, " is not the middle of the usable range ", usable_gaps()));
+assert(overlap() >= 15 && overlap() <= lap_len,
+       str("overlap is ", overlap(), " mm; must be 15..", lap_len, ". Change gap or rail_len."));
+assert(len(aligned_hs()) >= 2,
+       str("gap ", gap, " mm does not line the two bolt rows up. Usable gaps: ", usable_gaps()));
+assert(n_knuckles % 2 == 1, "odd knuckle count: the plate must own both ends");
+assert((mat_t - pin_d - pin_fit) / 2 >= 1.2, "too little knuckle round the pin");
+assert(haunch_lap_margin() >= 0,
+       str("a haunch's plate leg reaches ", -haunch_lap_margin(), " mm into the lap; ",
+           "shorten haunch_len or move haunch_vs toward the user"));
+assert(key_w() <= haunch_bar, "key clip wider than the haunch's bar");
+assert(key_clips[1][0] - key_clips[1][1] > key_top - key_long - 1.5, "lower clip past the key's tip");
+assert(key_lip[0] < key_af / cos(30) && key_ch[0] > key_af / cos(30), "key clip won't snap or won't fit");
+assert((haunch_t - m4_clear) / 2 >= 1.5, "too little haunch either side of an M4 bore");
+assert(m4_nut_af + fit <= haunch_t, "the foot's nut would stand proud of the haunch's faces");
+assert(mat_t - wall_nut_d >= 2.4, "too little wall in front of the wall's nut");
+assert(mat_t - plate_cb_d >= 1.6, "too little plate under the foot screw's head");
+assert(wall_head_x >= 8, "too little haunch between the wall and the screw head");
+assert(wall_tab_z[0] > 0 && wall_tab_z[1] <= wall_bolt_z - m4_head_d / 2 - 0.5 - 1
+       && wall_bolt_z + m4_head_d / 2 + 0.5 + 3 <= haunch_h,
+       "wall tab or head notch falls outside the haunch's top pad");
+assert(plate_bolt_x + (m4_nut_af / cos(30) + fit) / 2 + 3
+       <= haunch_len - max(0, foot_tip_z - 8) * (haunch_len - haunch_pad[0]) / (haunch_h - 8),
+       "foot nut too close to the haunch's outer edge");
+for (s = ["left", "right"]) {
+    assert(len(clashes(s)) == 0,
+           str(s, " wall: a haunch covers ", clashes(s), ". Move haunch_vs."));
+    for (h = low_screws(s)) assert(in_plate_knuckle(h),
+           str(s, " wall: board screw at ", h, " falls in a wall knuckle; change n_knuckles"));
 }
 
 /* ================= assembly ================= */
-module half_left() {
-    translate([-gap / 2, 0, 0]) {
-        color([0.95, 0.47, 0.32]) spine_half("a");
-        color([0.80, 0.84, 0.90]) rotate([0, 0, a_half()]) translate([0, 0, 0]) wall_in_use();
+// Approximate case volume behind the plate, so the picture reads. Not a measurement.
+case_depth = 22;
+phi = 90;               // hinge angle shown: 90 standing (haunches in), 0 folded
+module board_ghost(side) in_use() translate([0, 0, mat_t]) {
+    color([0.22, 0.24, 0.27]) linear_extrude(plate_t(side)) board2d(side);
+    color([0.30, 0.32, 0.36], 0.35) translate([0, 0, plate_t(side)])
+        linear_extrude(case_depth) offset(delta = -1) board2d(side);
+}
+// One half in the left-half convention, rail frame, the desk at z = 0.
+module half(side, hand) translate([-gap / 2, 0, 0]) {
+    color([0.95, 0.47, 0.32]) rail_half(hand);
+    rotate([0, 0, a_half()]) {
+        wall_pose(phi) {
+            color([0.80, 0.84, 0.90]) wall_hinged(side);
+            board_ghost(side);
+        }
+        if (phi == 90) color([0.98, 0.75, 0.30]) for (v = haunch_vs)
+            haunch_at(v, key = side == "left" && v == haunch_vs[1]);
+        color([0.5, 0.5, 0.5]) translate([hinge_axis()[0], 0, hinge_axis()[1]])
+            rotate([90, 0, 0]) cylinder(d = pin_d, h = foot_v[1] - foot_v[0], center = true);
     }
 }
-module half_right() mirror([1, 0, 0]) {
-    translate([-gap / 2, 0, 0]) {
-        color([0.95, 0.47, 0.32]) spine_half("b");
-        color([0.80, 0.84, 0.90]) rotate([0, 0, a_half()]) wall_in_use();
-    }
-}
-module board_ghost() color([0.22, 0.24, 0.27], 0.85)
-    translate([0, -BOARD_V / 2, lip_z]) rotate([0, -90, 0]) translate([0, 0, mat_t + standoff_h])
-        linear_extrude(1.6) pcb_outline();
-module boards() {
-    translate([-gap / 2, 0, 0]) rotate([0, 0, a_half()]) board_ghost();
-    mirror([1, 0, 0]) translate([-gap / 2, 0, 0]) rotate([0, 0, a_half()]) board_ghost();
-}
+module half_left()  half("left", "a");
+module half_right() mirror([1, 0, 0]) half("right", "b");
 
 /* ================= output ================= */
-if (vpart == "wall")        wall();
-if (vpart == "spine_left")  spine_half("a");
-if (vpart == "spine_right") spine_half("b");
-if (vpart == "carrier")     carrier();
-if (vpart == "rest_arm")    rest_arm();
+// Right-hand parts are exported mirrored, because in the assembly the right half is the
+// mirror image of a left-convention half. mirror([0,1,0]) keeps each part's print face down.
+if (vpart == "wall_left")   wall("left");
+if (vpart == "wall_right")  mirror([0, 1, 0]) wall("right");
+if (vpart == "spine_left")  rail_half("a");
+if (vpart == "spine_right") mirror([0, 1, 0]) rail_half("b");
+if (vpart == "haunch")      haunch();                 // print three
+if (vpart == "haunch_key")  haunch_key();             // print one: the haunch with the key clip
+if (vpart == "lap_pin")     lap_pin();                // print 6 (4 at 270; 6 at the narrowest)
 if (vpart == "half")        half_left();
-if (vpart == "assembly")  { half_left(); half_right(); boards(); }
+if (vpart == "assembly")  { half_left(); half_right(); }
+// 2D profiles, for cutting the cardboard mock-up at 1:1 (export as SVG). The hinge is 3D;
+// in cardboard, tape the wall to the plate along the axis line.
+if (vpart == "wall_left_2d")   wall2d("left");
+if (vpart == "wall_right_2d")  mirror([0, 1]) wall2d("right");
+if (vpart == "haunch_2d")      haunch2d();
