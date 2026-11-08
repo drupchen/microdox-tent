@@ -33,7 +33,7 @@ was told, done, or answered. Never delete.
   wall no longer covers it (v~140, outside the frame). Told.
 - [x] 2026-11-08 — Drupchen: won't attach the rests -> spine hollowed (46.7 -> 27.5 g each,
   ~189 g total), checks clean. Asked whether to drop carrier/rest_arm + rest_lift. Told.
-- [ ] 2026-11-08 — Retarget, bar removal and hinge redesign all done but NOT committed;
+- [x] 2026-11-08 — COMMITTED 1d523d3, Told. Retarget, bar removal and hinge redesign all done but NOT committed;
   awaiting Drupchen's go to commit.
 - [x] 2026-11-08 — (superseded by the hinge design, ~246 g; told) Mass: walls + spines ~443 g solid PETG (~€15–21 at the shop's rate, less
   with infill), well over the handoff's "98 g × 1.5" guess. Dropping the bar did NOT make it
@@ -91,7 +91,7 @@ was told, done, or answered. Never delete.
   aligned lap-hole pair (reading: printed pins replacing the M3 lap bolts). Not done until
   verified and told.
 
-- [ ] 2026-11-08 — Repo cleaned on request ("only keep what we have built"): removed the
+- [x] 2026-11-08 — Repo cleaned on request ("only keep what we have built"): removed the
   upstream wedge (microdox_ref/ribs, tools, check_results, reference/, stl/stands, joint,
   test-prints), the 1:1 fit template, HANDOFF.md, old images, and the rest kit (carrier,
   rest_arm, pad_ring_ref; closes the rest_lift question, since the rests aren't attached).
