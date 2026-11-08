@@ -22,15 +22,33 @@ change — see *What's in here* below.
 | | |
 |---|---|
 | `cad/microdox_ribs.scad` | Upstream's wedge stand, 20–35°. Unchanged apart from a comment on why 35° is the ceiling. |
-| `cad/vertical.scad` | **The 90° stand.** Three flat plates per half — wall, two braces, base — slotted together. |
+| `cad/vertical.scad` | **The 90° stand.** Two walls and a splayed spine, plus the rest kit. |
+| `cad/pad_ring_ref.scad` | The gel-pad bezel's outline, sliced from BastardKB's own mesh. |
 | `stl/stands/`, `stl/joint/` | Upstream exports: wedge stands at 20–35°, and the spacers and couplers. |
 | `stl/vertical/` | Exports of the 90° stand. **Microdox hole pattern — a geometry proof, not parts to print.** |
 | `tools/` | Upstream's rib print-angle checker and the stability model. |
 
 ![The 90° stand, both halves on the spine](docs/images/assembly_vertical.png)
 
-Keys face outward, hands come in from outside, braces sit behind the walls where nothing
-else wants to be, and the spine runs between the two bases.
+### The architecture, and why it changed twice
+
+The first attempt at 90° gave each half a 139 × 105 mm base plate. That was wrong in a way
+worth recording, because the mistake is easy to repeat: the plate was **62% of each half's
+mass**, and it put all the structure *outboard*, under the hands, while leaving the ~160 mm
+of air between the two vertical halves completely empty.
+
+At 90° that gap is dead space. No hands, no keycaps, no cables. It is the only place
+structure doesn't get in the way, and the structure was on the wrong side of the keyboard.
+
+So everything moved inboard:
+
+| part | job |
+|---|---|
+| `wall` ×2 | Flat plate. Board bolts to its outer face; bottom edge stands on the desk. |
+| `spine_left` / `spine_right` | Flat plate between the halves, with an upturned flange at its outer end that the wall bolts to face-to-face. Half-lapped in the middle and bolted through a hole row. |
+
+No base plates, no braces, no feet. A bolted face-to-face lap is already a moment
+connection, and the wall's own bottom edge takes the vertical load straight to the desk.
 
 ### Why the wedge file couldn't just take a bigger number
 
@@ -39,23 +57,81 @@ The Ribs stand is a wedge, and a wedge does not become a bookend by turning a kn
 and the wishbone ribs invert through the plate. The `tent_deg` assert in that file is a real
 structural limit, not a cautious one. 36–89° is unexplored territory: neither file covers it.
 
-### What carries over unchanged
+### Splay lives in the printed flange
 
-The dovetail joint. `cad/vertical.scad` includes `microdox_ribs.scad` directly and reuses
-`sloped_tongue()`, so **every spacer and coupler already in `stl/joint/` fits the vertical
-stands**. This is not luck: `top_slope()` is `max(30, 50 - tent_deg)`, which evaluates to 30
-for every tent angle in 20–35°, so the joint geometry never depended on the tent angle. The
-hard part of the project — a repeatable, screw-clamped, chainable connection that sets
-spacing and splay — was already angle-agnostic, which is why the inter-half distance stays
-changeable for free.
+The flange on each spine half is rotated by half the splay angle, so the wall bolted to it
+comes out splayed and **nothing has to be aimed by eye at assembly**. That is deliberate:
+splay is the one measurement that cannot be rediscovered by feel in ten minutes, so it should
+be impossible to get wrong when reassembling in a café. Distance is the thing you adjust.
+
+Sign follows `place_half()` in `microdox_ref.scad`: positive `splay_deg` converges the halves
+away from you. If the tracing disagrees, pass a negative value rather than editing the code.
+
+### Distance: a half-lap, not a spacer set
+
+The two spine halves are relieved to half thickness over their inner 70 mm, on opposite
+faces, so they interlock to full thickness and bolt through a shared hole row. One part type
+per hand, nothing loose to carry or lose.
+
+The catch, which the file asserts on: **the gap is not freely settable.** The two rows run in
+opposite directions, so holes only meet where `h1 + h2 == gap`. At the defaults that leaves
+**136, 146, 156, 166 and 176 mm**, and the assert prints the list if you ask for anything
+else. Default is 156 mm, which lines up three bolt positions.
+
+This replaces the dovetail spacer system for the vertical stand. The dovetail still works and
+is still proven, but it needs a 12 mm tongue bar and a bag of spacers; the lap needs neither.
 
 ### Current numbers
 
-Flat plates at 6 mm, on the Microdox outline: **86 g per half, 172 g the pair** — roughly €9
-of filament at €0.05/g, plus machine time. Wall and brace are plain prisms, so one printed
-part serves either hand by flipping it over; only the base is handed, because its tongues
-stand proud on one face. Wall-to-wall spacing is 160 mm with the 40 mm spacer, and changes
-with the spacer.
+| | |
+|---|---|
+| Core, 2 walls + 2 spine halves | **98 g** (the base-plate design was 172 g) |
+| Rest kit, 2 carriers + 2 arms | **65 g** (`pads-base` alone was 51 g each, 102 g the pair) |
+| Everything | **163 g**, roughly €8 of filament at €0.05/g, plus machine time |
+
+Footprint is about 160 × 95 mm, nearly all of it in the dead space between the halves,
+against 318 × 105 mm before. Every part is a flat plate or a plate with one upstand, so they
+nest: turn one of each pair end-for-end and the flanges and lips sit at opposite ends.
+
+### Board retention: a lip and two bolts, with different jobs
+
+The **lip** is a shelf along the bottom of the wall that the board's lower edge sits on. It
+carries the weight in compression against a surface, which printed plastic is good at.
+
+The **bolts** only stop the board leaving — lifting off, or being pulled outward by working
+the trackball, which is a real force on the right half and the reason a tray alone won't do.
+Because the keys face outward at 90°, every keypress pushes the board *into* the wall, so in
+normal typing the bolts carry almost nothing.
+
+Clearance holes are cut at all five mount points; use whichever two or three of yours line
+up. This also means the bolt pattern only has to be *approximately* right to be useful,
+which takes some of the risk out of the pencil rubbing.
+
+### Rest kit
+
+The upstream wrist rest is a four-part chain: a modified bottom plate, `pads-arm` (a 36 × 8
+× 62 mm blade, ~5 g), `pads-base` (a hollow kidney 28 mm tall, ~51 g) and `pads-holder` (the
+bezel that traps the gel pad). Drupchen kept only the bezel.
+
+That bezel is 120 × 83 × 10 mm and has **no screw holes, no tabs and no bosses** — it exists
+only to clamp the pad's rim. Dropping the body dropped the only part with a mounting
+interface, which is why the rest is currently twist-tied to the mesh.
+
+| part | |
+|---|---|
+| `carrier` | Replaces `pads-base` at 20 g instead of 51. Flat tray, with a recess the bezel drops into. The outline is **sliced from the bezel's own mesh**, not fitted to a guess — see `cad/pad_ring_ref.scad`. |
+| `rest_arm` | A plain blade with a hole row at each end: one bolts up into the carrier floor, the other goes wherever the rest turns out to belong. |
+
+`rest_lift` is 0 by default, making the carrier a flat tray. At 90° the hand almost certainly
+meets the board higher than it did at 58°, so it probably needs raising — but by how much is
+an open question below, and a wrong guess is a reprint. Raise the parameter and the tray
+grows a thin open skirt; even lifted it stays far lighter than the original body, because the
+walls are 3 mm and the bottom is open.
+
+The arm is deliberately **not** committed to a fixing point on the stand. Where it attaches
+depends on the same unmeasured rest position, and the rest may well be better left detached
+anyway: at 90° a 120 × 83 mm rest hanging off each half roughly doubles the footprint, and in
+a reclining chair the rest and the keyboard may want to move independently.
 
 ---
 
@@ -146,7 +222,7 @@ along the inner edges of the foot plates.
 - **~56° included** between the halves
 
 Confidence: moderate, and now **stale** — this was measured at 58°, and going vertical
-very likely moved it. Re-measure before cutting the base plates, by counting grid squares:
+very likely moved it. Re-measure before cutting the spine flanges, by counting grid squares:
 lay a stick along a plate edge, count squares across versus along, `atan(across/along)`.
 Integer counts, no measurement error.
 
@@ -276,7 +352,7 @@ dimension before anything expensive is committed.
 - **No adjustment mechanism.** The angle is 90° and there is nothing steeper to adjust
   toward, so the printed part is a single fixed angle — lighter, stronger, cheaper and
   simpler than detents or bolt arrays. Adjustability was only ever a workaround for not
-  knowing the answer. Inter-half distance stays adjustable, via the spacers.
+  knowing the answer. Inter-half distance stays adjustable, via the spine's hole row.
 - No need to print a lap deck. The grid table at home, a table away, or a thin plywood or
   acrylic sheet — the deck is interchangeable and the printed parts carry only the geometry.
 
@@ -328,6 +404,8 @@ Ordered by how much they block the design.
 - **Palm rest positions at 90°**, in grid squares from a common corner
 - **Height of each half's bottom edge above the deck** — at 90° the key field is at its
   tallest, and this sets where the hands have to be
+- **Case thickness at the board's bottom edge** — sets `lip_reach`; measurable with the case shut
+- **Rest height at 90°** — sets `rest_lift`; 0 for now, which is almost certainly too low
 - Bearing diameter (count is three, confirmed)
 - Wire grid pitch and wire diameter
 - Print shop bed size and exact per-gram rate
@@ -353,10 +431,11 @@ longer describes what sits on the deck.
 |---|---|---|
 | Target board | Microdox v2 | Charybdis |
 | Tent range | 20–35° | 90°, fixed |
-| Stand shape | ribbed wedge | bookend: wall + braces + base |
-| Mounting | replaces stock 2.0 mm bottom plate | bolts to the existing bottom-plate pattern (not yet measured) |
-| Construction | printed ribbed stand | flat plates, slot-and-tab, for cost and packing |
-| Spine | sets spacing and splay | same parts, but now also structural |
+| Stand shape | ribbed wedge | bookend: two walls on a spine, no base plates |
+| Mounting | replaces stock 2.0 mm bottom plate | lip carries the weight, two bolts stop it leaving (pattern not yet measured) |
+| Construction | printed ribbed stand | flat plates, bolted, for cost and packing |
+| Spine | dovetail spacer set, sets spacing and splay | half-lapped pair; splay printed into the flange, distance on a hole row — and now structural |
+| Wrist rest | 4-part chain, `pads-base` 51 g | flat carrier, 20 g, profile sliced from the bezel's own mesh |
 | Surface | desk | lap deck, wire mesh, or table |
 | Transport | — | comes apart, packs flat |
 | Palm rests | not addressed | carried on the spine |
@@ -372,7 +451,9 @@ the hard bit, and they're already solved.
 - [josephdcaputo/microdox-tent](https://github.com/josephdcaputo/microdox-tent) — the stand
   and spacer architecture, and the parametric OpenSCAD implementation this forks.
 - [Bastard Keyboards](https://github.com/Bastardkb/Charybdis) — the Charybdis itself, the
-  modular adjustable tenting stand, and the trackball retainer mod. CC BY-NC-SA 4.0.
+  modular adjustable tenting stand, the trackball retainer mod, and
+  `files/mods/tenting-stand-with-wrist-pads`, whose `pads-holder` bezel the carrier in
+  `cad/vertical.scad` is built around. CC BY-NC-SA 4.0.
 
 Worth reading before cutting anything:
 
