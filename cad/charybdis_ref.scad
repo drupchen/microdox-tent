@@ -38,6 +38,21 @@ CB_SCREWS = [[105.004,26.121], [55.658,27.704], [12.658,50.704], [147.238,84.424
 // on/off and reset openings, 5.0 mm
 CB_BUTTONS = [[131.358,38.613], [127.858,52.113]];
 
+// AS-BUILT features, located from Drupchen's pencil tracing of the right plate and
+// mapped into this frame through the six holes (fit: 0.46 mm rms, 0.62 mm max, so these
+// are good to about half a millimetre).
+//
+// His plates are a remix, not the stock part: the two 5.0 mm openings the DXF carries at
+// (131.36, 38.61) and (127.86, 52.11) have been replaced. In their place are a square
+// cable opening and a RESET PLUNGER - a raised dome on a flexure, with a slot cut round
+// it so it can be pressed. It stands proud of the outer face, which is the face a stand
+// bolts against, so it needs both clearance and room to move. Relieve generously and put
+// an access hole through, or reset becomes a teardown.
+CB_RESET        = [130.0, 34.8];   // dome + flexure slot
+CB_RESET_BBOX   = [ 6.4, 13.8];
+CB_SQUARE       = [139.8, 52.9];   // cable / connector opening
+CB_SQUARE_BBOX  = [13.1, 13.2];
+
 module cb_outline()  polygon(CB_OUTLINE);
 module cb_screws_2d(d = CB_SCREW_D) for (h = CB_SCREWS) translate(h) circle(d = d, $fn = 32);
 module cb_buttons_2d(d = 5.0)       for (h = CB_BUTTONS) translate(h) circle(d = d, $fn = 32);

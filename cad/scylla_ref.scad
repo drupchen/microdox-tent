@@ -23,6 +23,15 @@ SC_SCREWS = [[51.239,7.138], [132.643,8.086], [148.643,64.086], [33.186,94.276],
 // on/off and reset openings, 5.0 mm
 SC_BUTTONS = [[129.442,99.348], [132.942,112.848]];
 
+// AS-BUILT features, from the tracing of the left plate, mapped through the six holes
+// (fit: 0.57 mm rms, 0.79 mm max). Same story as the right: the stock 5.0 mm openings at
+// (129.44, 99.35) and (132.94, 112.85) are gone, replaced by a square cable opening and
+// a reset plunger - a raised dome on a flexure that must stay free to be pressed.
+SC_RESET        = [119.6, 111.2];
+SC_RESET_BBOX   = [ 6.4, 13.1];
+SC_SQUARE       = [140.6,  99.4];
+SC_SQUARE_BBOX  = [13.9, 12.9];
+
 module sc_outline()  polygon(SC_OUTLINE);
 module sc_screws_2d(d = SC_SCREW_D) for (h = SC_SCREWS) translate(h) circle(d = d, $fn = 32);
 module sc_buttons_2d(d = 5.0)       for (h = SC_BUTTONS) translate(h) circle(d = d, $fn = 32);
