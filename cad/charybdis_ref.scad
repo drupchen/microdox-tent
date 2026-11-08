@@ -12,7 +12,15 @@
 //
 // The plate is 2.00 mm thick, which matches stock_plate_t in microdox_ribs.scad.
 //
-// Origin at the outline's min corner. Units mm. One hand; mirror for the other.
+// The pattern is invariant across revisions AND across hands. Checked against
+// files/4x6/MK2/charybdis_v4_6_plate_L.stl and charybdis_v4_247_plate_R.stl: all three
+// plates give the same fifteen pairwise distances between the six mounting holes, to
+// within 0.02 mm. What does change between revisions is everything else - MK2's outline
+// is 155.9 x 154.2, its mounting holes are 6.0 mm not 4.0, it has one button opening
+// rather than two, and it adds six 10.15 mm pockets for the magnetic tenting system.
+// So treat the outline here as indicative and the hole pattern as reliable.
+//
+// Origin at the outline's min corner. Units mm.
 
 CB_PLATE_SIZE = [153.643, 149.644];
 CB_PLATE_T    = 2.00;
