@@ -26,7 +26,8 @@ SC_BUTTONS = [[129.442,99.348], [132.942,112.848]];
 // AS-BUILT features, from the tracing of the left plate, mapped through the six holes
 // (fit: 0.57 mm rms, 0.79 mm max). Same story as the right: the stock 5.0 mm openings at
 // (129.44, 99.35) and (132.94, 112.85) are gone, replaced by a square cable opening and
-// a reset plunger - a raised dome on a flexure that must stay free to be pressed.
+// a reset plunger: a flexure tab whose dome protrudes on the INSIDE, toward the PCB. The
+// outer face is flat, so no relief pocket - just a hole through the stand to reach it.
 SC_RESET        = [119.6, 111.2];
 SC_RESET_BBOX   = [ 6.4, 13.1];
 SC_SQUARE       = [140.6,  99.4];

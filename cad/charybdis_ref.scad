@@ -44,10 +44,12 @@ CB_BUTTONS = [[131.358,38.613], [127.858,52.113]];
 //
 // His plates are a remix, not the stock part: the two 5.0 mm openings the DXF carries at
 // (131.36, 38.61) and (127.86, 52.11) have been replaced. In their place are a square
-// cable opening and a RESET PLUNGER - a raised dome on a flexure, with a slot cut round
-// it so it can be pressed. It stands proud of the outer face, which is the face a stand
-// bolts against, so it needs both clearance and room to move. Relieve generously and put
-// an access hole through, or reset becomes a teardown.
+// cable opening and a RESET PLUNGER - a flexure tab with a dome on it, inside a slot.
+//
+// The dome protrudes on the INSIDE, toward the PCB: you press the tab from outside and
+// the dome pushes the switch. So the outer face - the face a stand bolts against - is
+// flat, and needs no relief pocket. What it does need is a hole through the stand at
+// this position, or the tab cannot be reached and reset means unbolting the keyboard.
 CB_RESET        = [130.0, 34.8];   // dome + flexure slot
 CB_RESET_BBOX   = [ 6.4, 13.8];
 CB_SQUARE       = [139.8, 52.9];   // cable / connector opening
