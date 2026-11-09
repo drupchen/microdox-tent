@@ -178,3 +178,7 @@ was told, done, or answered. Never delete.
   mm, flat face to the keyboard; 10 mm bosses on the other face (13.0 overall); 4 holes on
   Charybdis screw positions (~1.4 mm rms, oblong ~5 mm), countersunk from the boss side,
   ~90 deg, ~10 mm at the surface. Told.
+
+- [x] 2026-11-09 — FINISHED, told: full-build preview `docs/build_preview.3mf` (coloured, boards as
+  approximate ghosts, case_depth 22 not measured) and new README images
+  (`assembly_vertical.png` re-rendered tight, `assembly_top.png` added).

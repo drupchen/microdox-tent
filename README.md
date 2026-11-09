@@ -9,7 +9,12 @@ bookend.
 It has to work on a lap in a reclining chair, hold splay and distance repeatably, and fold
 flat into a bag without taking the boards off.
 
-![The 90° stand, both halves on the spine](docs/images/assembly_vertical.png)
+![The 90° stand assembled: both walls standing on the lapped spine plates, haunches inboard, the staple in blue](docs/images/assembly_vertical.png)
+
+![The same from above: the 28° splay of each wall and the hole row where the plates lap](docs/images/assembly_top.png)
+
+The boards (dark grey, translucent case) are rough stand-ins, there only to show where they
+sit: the outline is the real plate, the 22 mm depth is a guess, not a measurement.
 
 ## What's in here
 
@@ -18,6 +23,7 @@ flat into a bag without taking the boards off.
 | `cad/vertical.scad` | The stand. One parametric file; every part, the assembly, and the asserts that check it. |
 | `cad/charybdis_ref.scad`, `cad/scylla_ref.scad` | The two real bottom plates: outline, six mounting holes, reset plunger, cable opening. Holes from the upstream DXFs, checked against tracings of both plates (0.5–0.6 mm rms). |
 | `stl/vertical/` | The parts, ready to print. Right-hand parts are already mirrored. `print_set.stl` (and `.3mf`) holds the whole stand in one file: all nine parts laid flat as they print, 5 mm apart, in about 346 × 303 mm. If the print bed is smaller, use the single-part files. |
+| `docs/build_preview.3mf` | The whole build, assembled at the 270 mm gap with the boards as stand-ins, in colour, to turn around in any 3MF viewer or slicer. Not for printing. Regenerate with `openscad --backend=manifold --enable=lazy-union -D 'vpart="assembly"' -o docs/build_preview.3mf cad/vertical.scad`. |
 | `OWED.md` | Running record of what was found, asked and decided. |
 
 Export a part with `openscad -D 'vpart="wall_left"' -o wall_left.stl cad/vertical.scad`
