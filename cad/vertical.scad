@@ -591,17 +591,23 @@ if (vpart == "lap_staple")  lap_staple();             // print one
 if (vpart == "half")        half_left();
 module staple_in_place() translate([-gap / 2 + aligned_hs()[0], 0, mat_t + staple_t])
     mirror([0, 0, 1]) lap_staple();
-// Every part of the stand in one file, laid flat as each prints, 5 mm apart (~347 x 304 mm).
-// Each placement moves the part's own export from its bounding-box corner to its spot.
-module at(corner, at) translate([at[0] - corner[0], at[1] - corner[1], 0]) children();
+// Every part of the stand in one file, laid flat as each prints, nested into ~275 x 278 mm
+// with at least 2 mm between parts (2.35 mm measured on the real outlines). The layout came
+// from a search over part order and quarter-turns minimising the larger side: haunches head
+// to tail, spines side by side, the staple in a corner. Each part is the export turned
+// (never mirrored) about its own origin, then moved: place(angle, [x, y]).
+// A brim needs ~6 mm between parts, which this does not leave.
+module place(a, t) translate([t[0], t[1], 0]) rotate([0, 0, a]) children();
 module print_set() {
-    at([-22, -48], [0, 0])     rail_half("a");
-    at([-22, -48], [0, 102])   spine_right_print();
-    at([0, -140.6], [0, 204])  wall("left");
-    at([0, 42], [140, 204])    mirror([0, 1, 0]) wall("right");
-    for (i = [0 : 2]) at([-5.4, 0.6], [189 + i * 40.4, 0]) haunch();
-    at([-5.4, 0.6], [189 + 3 * 40.4, 0]) haunch_key();
-    at([-10.2, -3.2], [189, 120]) lap_staple();
+    place( 90, [-42.0,   0.0])  wall("left");
+    place(270, [-42.0, 269.01]) mirror([0, 1, 0]) wall("right");
+    place( 90, [127.5,  22.02]) rail_half("a");
+    place(270, [226.0, 162.0])  spine_right_print();
+    place( 90, [192.5, 191.9])  haunch();
+    place(  0, [230.9, 154.9])  haunch();
+    place(270, [ 71.9, 240.0])  haunch();
+    place(270, [100.4, 272.5])  haunch_key();
+    place( 90, [  3.25, 26.75]) lap_staple();
 }
 if (vpart == "print_set")   print_set();               // the whole stand, one file
 if (vpart == "assembly")  { half_left(); half_right(); color([0.3, 0.6, 0.9]) staple_in_place(); }

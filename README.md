@@ -22,7 +22,7 @@ sit: the outline is the real plate, the 22 mm depth is a guess, not a measuremen
 |---|---|
 | `cad/vertical.scad` | The stand. One parametric file; every part, the assembly, and the asserts that check it. |
 | `cad/charybdis_ref.scad`, `cad/scylla_ref.scad` | The two real bottom plates: outline, six mounting holes, reset plunger, cable opening. Holes from the upstream DXFs, checked against tracings of both plates (0.5–0.6 mm rms). |
-| `stl/vertical/` | The parts, ready to print. Right-hand parts are already mirrored. `print_set.stl` (and `.3mf`) holds the whole stand in one file: all nine parts laid flat as they print, 5 mm apart, in about 346 × 303 mm. If the print bed is smaller, use the single-part files. |
+| `stl/vertical/` | The parts, ready to print. Right-hand parts are already mirrored. `print_set.stl` (and `.3mf`) holds the whole stand in one file: all nine parts laid flat as they print, nested into 275 × 278 mm with at least 2 mm between them, so it fits a 300 × 300 mm bed. Parts are only turned, never mirrored. If the bed is smaller, or the shop prints with a brim (which wants ~6 mm between parts), use the single-part files. |
 | `docs/build_preview.3mf` | The whole build, assembled at the 270 mm gap with the boards as stand-ins, in colour, to turn around in any 3MF viewer or slicer. Not for printing. Regenerate with `openscad --backend=manifold --enable=lazy-union -D 'vpart="assembly"' -o docs/build_preview.3mf cad/vertical.scad`. |
 | `OWED.md` | Running record of what was found, asked and decided. |
 
