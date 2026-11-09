@@ -29,12 +29,12 @@ means they all pass.
 | part | print | |
 |---|---|---|
 | `wall_left`, `wall_right` | 1 each | Flat frame the board screws to: a foot that is the wall's half of the hinge, two columns, a top bar, four screw seats. Different parts, because the halves carry different plates. Print board face down, lobes up. |
-| `spine_left`, `spine_right` | 1 each | Flat plate on the desk between the halves: the other half of the hinge at its outer end, half-lapped with its partner in the middle through a hole row. Hollowed: rim, hinge strip, haunch feet and a centre bar stay solid. |
+| `spine_left`, `spine_right` | 1 each | Flat plate on the desk between the halves: the other half of the hinge at its outer end, half-lapped with its partner in the middle through a hole row. Hollowed: rim, hinge strip, haunch feet and a centre bar stay solid. `spine_left` has a small lug on the near side of its centre bar, just outboard of the lap, reaching into the opening beside it, with a hole along the bar for the staple's string; it lies in the plate's plane, so the wall still folds flat. |
 | `haunch` | 3 | A 30 × 108 mm, 8 mm thick triangular knee brace, open in the middle, that slots into wall and plate on the inboard side; one M4 × 16 at each end. |
-| `haunch_key` | 1 | The same haunch with a snap clip for the 3 mm hex key on one face (two channels and a stop under the tip; long leg vertical, short leg under the top pad). It goes on the left half's far haunch, clip facing away from you. Print it clip up. |
-| `lap_pin` | 6 | A headed pin, 3.1 mm shaft, dropped into each pair of lined-up lap holes (4 at the 270 mm gap, up to 6 at 250). It takes the lap's shear; gravity and the boards hold the halves down. |
+| `haunch_key` | 1 | The same haunch with a snap clip for the 3 mm hex key on one face (two snap channels; long leg vertical, short leg under the top pad). It goes on the left half's far haunch, clip facing away from you. Print it clip up. |
+| `lap_staple` | 1 | Two pins 10 mm apart (3.25 mm, a close fit in the 3.4 mm holes) joined by a bridge that sits on the upper plate. It goes into any two neighbouring lined-up holes, so the one staple serves every gap. A tab at one end, raised 1 mm off the plate, has a 2.2 mm hole for a string tied to the lug on `spine_left`. It takes the lap's shear; gravity and the boards hold the halves down. Print as exported: bridge down, pins up. |
 
-Mass, solid PETG: walls 38 + 39 g, plates 41 g each, haunches 20 g each, pins 0.1 g:
+Mass, solid PETG: walls 38 + 39 g, plates 41 g each, haunches 20 g each, staple 0.5 g:
 ~239 g in all.
 
 **Hardware, per half:** one 3 mm steel rod, 96 mm long (the hinge pin); 4 × M4 × 16
@@ -98,7 +98,7 @@ steps. Drupchen measured 22 cm between the keyboards' edges at their closest poi
 end, where the halves converge); at 28° per side that is 270 mm between the walls' inboard
 faces on the centreline, set as the **middle** of the range:
 
-| gap (centreline) | keyboards at closest | pins |
+| gap (centreline) | keyboards at closest | lined-up holes |
 |---|---|---|
 | 250 mm | ~202 mm | 6 |
 | 260 mm | ~211 mm | 5 |
@@ -106,7 +106,7 @@ faces on the centreline, set as the **middle** of the range:
 | 280 mm | ~229 mm | 3 |
 | 290 mm | ~238 mm | 2 |
 
-Changing the gap needs no reprint, only a different pair of holes.
+Changing the gap needs no reprint: the staple goes into whichever two holes line up.
 
 ## Assembly
 
@@ -119,10 +119,10 @@ Order matters. Per half:
 4. Drop in the haunches and screw each one: the top screw from the haunch's edge into the
    wall nut, the foot screw up from under the plate into the nut in the haunch's foot.
 
-Then slide the two halves' laps together and drop a pin into each pair of lined-up holes.
+Then slide the two halves' laps together and push the staple into two neighbouring lined-up holes.
 Bolt the haunches before joining the halves, while the key has room.
 
-**To pack, boards left on:** lift the pins out and pull the halves apart, undo the four haunch
+**To pack, boards left on:** lift the staple out (it stays on its string) and pull the halves apart, undo the four haunch
 screws on each half, lift the haunches out, and fold each wall onto its plate. The top screws
 stay in their haunches and the wall nuts stay under the board; only the foot nuts come loose,
 so keep them with the haunches. The key rides on its haunch. Folded, a wall reaches about

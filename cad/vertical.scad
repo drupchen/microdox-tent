@@ -60,8 +60,8 @@
 // the wall nuts into their board-face pockets before the board too: it keeps them there. Then
 // push the pin through wall and plate knuckles, stand the wall up, drop in the haunches, screw
 // them (top from the haunch's edge, foot from under the plate). Then bring the halves
-// together, sliding the laps, and drop a lap_pin into each pair of lined-up holes. To pack,
-// board left on: lift the pins out, undo the haunch screws, lift the haunches out, fold each wall onto its own plate. Folded, a wall reaches ~150 mm inboard, past the lap, so
+// together, sliding the laps, and push the lap_staple into two lined-up holes. To pack,
+// board left on: lift the staple out, undo the haunch screws, lift the haunches out, fold each wall onto its own plate. Folded, a wall reaches ~150 mm inboard, past the lap, so
 // the halves cannot stay joined while folded.
 //
 // INPUTS: splay_deg and gap were confirmed at 90 deg on 2026-11-08 (see below).
@@ -254,15 +254,46 @@ function n_aligned(g) = len([for (i = [0:n_lap()]) for (j = [0:n_lap()])
 function usable_gaps() = [for (g = [2*lap_h(0) : hole_pitch : 2*lap_h(n_lap())])
                           if (2*rail_len - g >= 15 && 2*rail_len - g <= lap_len
                               && n_aligned(g) >= 2) g];
-// What goes through each pair of lined-up holes: a printed pin, head on the upper plate, its
-// tip short of the desk. It only has to take the lap's shear (holding the halves at their
-// distance and splay); gravity and the boards keep the halves down on the desk.
-pin_shaft = m3_clear - 0.3;
-pin_head  = [6.5, 1.5];
-module lap_pin() {
-    cylinder(d = pin_head[0], h = pin_head[1]);
-    translate([0, 0, pin_head[1] - 0.01]) cylinder(d = pin_shaft, h = mat_t - 0.3 - 0.4 + 0.01);
-    translate([0, 0, pin_head[1] + mat_t - 0.3 - 0.4]) cylinder(d1 = pin_shaft, d2 = pin_shaft - 0.8, h = 0.4);
+// What holds the lap: one printed staple, two pins one hole pitch apart joined by a bridge
+// that sits on the upper plate. Every usable gap lines up at least two neighbouring holes, so
+// the one staple fits them all. It only has to take the lap's shear (the halves' distance and
+// their turn against each other); gravity and the boards keep the halves down on the desk.
+// A tab at one end, flush with the bridge's top and standing 1 mm proud of the plate, takes
+// a string tied to the eyelet on spine_left's near edge, so it cannot get lost.
+// Drawn as printed: bridge top face down on the bed, pins up.
+pin_shaft  = m3_clear - 0.15;           // a close fit: two pins 10 mm apart set the turn
+pin_len    = mat_t - 0.3;               // tip short of the desk
+staple_w   = 6.5;
+staple_t   = 2.5;                        // bridge
+staple_tab = [7, 1.5];                   // string tab: reach past the bridge's end, thickness
+staple_hole = 2.2;
+module lap_staple() {
+    hull() for (x = [0, hole_pitch]) translate([x, 0, 0]) cylinder(d = staple_w, h = staple_t);
+    difference() {
+        hull() {
+            cylinder(d = staple_w, h = staple_tab[1]);
+            translate([-staple_tab[0], 0, 0]) cylinder(d = staple_w, h = staple_tab[1]);
+        }
+        translate([-staple_tab[0], 0, -1]) cylinder(d = staple_hole, h = staple_tab[1] + 2);
+    }
+    for (x = [0, hole_pitch]) translate([x, 0, staple_t - 0.01]) {
+        cylinder(d = pin_shaft, h = pin_len - 0.4 + 0.01);
+        translate([0, 0, pin_len - 0.4]) cylinder(d1 = pin_shaft, d2 = pin_shaft - 0.8, h = 0.4);
+    }
+}
+// The string's anchor: a lug on the near side of spine_left's centre bar, just outboard of
+// the lap, reaching into the opening beside it, with a hole along the bar at mid-thickness, so
+// the string never runs under the plate. In the plate's own plane, so the wall still folds
+// flat over it.
+eye_len  = 10;
+eye_out  = 6;
+eye_hole = 2.5;
+function eye_x() = lap_start() - eye_len / 2 - 4;
+function eye_y() = -spine_bar / 2;
+module eye_lug() translate([eye_x(), eye_y(), 0]) difference() {
+    translate([-eye_len / 2, -eye_out, 0]) cube([eye_len, eye_out + 2, mat_t]);
+    translate([-eye_len / 2 - 1, -eye_out / 2, mat_t / 2]) rotate([0, 90, 0])
+        cylinder(d = eye_hole, h = eye_len + 2);
 }
 module lap_holes() for (i = [0 : n_lap()])
     translate([lap_h(i), 0, -1]) cylinder(d = m3_clear, h = mat_t + 2);
@@ -271,15 +302,17 @@ module lap_holes() for (i = [0 : n_lap()])
 // only the paths that carry load stay solid. A rim, the hinge strip, each haunch's foot (tab
 // and bolt), and a bar down the centreline that carries the lap bolts and ties the halves.
 spine_rim = 8;
+spine_bar = 16;
 module spine_pockets2d() offset(r = 4) offset(delta = -4) difference() {
     offset(delta = -spine_rim) rail_plate2d();
     rotate(a_half()) translate([-50, -200]) square([plate_start() + 12 + 50, 400]);   // hinge strip
     rotate(a_half()) for (v = haunch_vs)
         translate([0, rail_y(v) - 8]) square([haunch_len + 8, haunch_t + 16]);      // haunch feet
-    translate([-100, -8]) square([300, 16]);                                         // centre bar
+    translate([-100, -spine_bar / 2]) square([300, spine_bar]);                       // centre bar
 }
 // handed: "a" is relieved on its top face, "b" on its bottom, so the two half-lap together.
-module rail_half(hand = "a") difference() {
+module rail_half(hand = "a") { rail_body(hand); if (hand == "a") eye_lug(); }
+module rail_body(hand) difference() {
     union() {
         difference() {
             linear_extrude(mat_t) rail_plate2d();
@@ -350,8 +383,8 @@ module haunch_at(v, key = false) translate([0, rail_y(v) + haunch_t, 0]) rotate(
 /* ---------- the hex key's clip, on one haunch ---------- */
 // Drupchen's key for the M4 screws: a 3 mm L-key, long leg ~56 mm, short leg ~19 mm (ruler
 // photos). It rides on the haunch's wall-side bar, long leg vertical, bend at the top: two
-// snap channels hold it, and a block under the tip stops it sliding down. Lifting it out means
-// pushing it back through the lips.
+// snap channels hold it, by their grip alone. Lifting it out means pulling it back through
+// the lips.
 key_af     = 3.0;
 key_long   = 56;            // outside of the bend to the tip
 key_top    = mat_t + haunch_h - haunch_pad[1] - 2;   // outside of the bend, height above desk
@@ -371,8 +404,6 @@ module key_channel2d() let(w = key_w(), h = key_ch[1] + key_lip[1]) difference()
 module key_clip() translate([key_x, 0, haunch_t]) {
     for (c = key_clips) translate([0, c[0], 0]) rotate([90, 0, 0])
         linear_extrude(c[1]) key_channel2d();
-    translate([-key_w() / 2, key_top - key_long - 1.5 - 4, 0])          // under the tip
-        cube([key_w(), 4, key_ch[1] + key_lip[1]]);
 }
 module haunch_key() { haunch(); key_clip(); }
 
@@ -493,6 +524,9 @@ assert((mat_t - pin_d - pin_fit) / 2 >= 1.2, "too little knuckle round the pin")
 assert(haunch_lap_margin() >= 0,
        str("a haunch's plate leg reaches ", -haunch_lap_margin(), " mm into the lap; ",
            "shorten haunch_len or move haunch_vs toward the user"));
+assert(eye_x() + eye_len / 2 + 3 <= usable_gaps()[0] - rail_len,
+       "string lug under the other half's plate at the narrowest gap");
+assert(eye_x() + eye_len / 2 <= lap_start(), "string lug in the lap");
 assert(key_w() <= haunch_bar, "key clip wider than the haunch's bar");
 assert(key_clips[1][0] - key_clips[1][1] > key_top - key_long - 1.5, "lower clip past the key's tip");
 assert(key_lip[0] < key_af / cos(30) && key_ch[0] > key_af / cos(30), "key clip won't snap or won't fit");
@@ -549,9 +583,11 @@ if (vpart == "spine_left")  rail_half("a");
 if (vpart == "spine_right") mirror([0, 1, 0]) rail_half("b");
 if (vpart == "haunch")      haunch();                 // print three
 if (vpart == "haunch_key")  haunch_key();             // print one: the haunch with the key clip
-if (vpart == "lap_pin")     lap_pin();                // print 6 (4 at 270; 6 at the narrowest)
+if (vpart == "lap_staple")  lap_staple();             // print one
 if (vpart == "half")        half_left();
-if (vpart == "assembly")  { half_left(); half_right(); }
+module staple_in_place() translate([-gap / 2 + aligned_hs()[0], 0, mat_t + staple_t])
+    mirror([0, 0, 1]) lap_staple();
+if (vpart == "assembly")  { half_left(); half_right(); color([0.3, 0.6, 0.9]) staple_in_place(); }
 // 2D profiles, for cutting the cardboard mock-up at 1:1 (export as SVG). The hinge is 3D;
 // in cardboard, tape the wall to the plate along the axis line.
 if (vpart == "wall_left_2d")   wall2d("left");
