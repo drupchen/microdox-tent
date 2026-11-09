@@ -575,12 +575,16 @@ module half_left()  half("left", "a");
 module half_right() mirror([1, 0, 0]) half("right", "b");
 
 /* ================= output ================= */
+// spine_right is relieved on its desk face, so as modelled its lap would hang 3 mm off the
+// bed for 80 mm. It prints turned over (a rotation, so still the right hand): lap face up,
+// the haunch-foot counterbores opening upward. Nothing else on it is one-sided.
+module spine_right_print() translate([0, 0, mat_t]) rotate([180, 0, 0]) mirror([0, 1, 0]) rail_half("b");
 // Right-hand parts are exported mirrored, because in the assembly the right half is the
 // mirror image of a left-convention half. mirror([0,1,0]) keeps each part's print face down.
 if (vpart == "wall_left")   wall("left");
 if (vpart == "wall_right")  mirror([0, 1, 0]) wall("right");
 if (vpart == "spine_left")  rail_half("a");
-if (vpart == "spine_right") mirror([0, 1, 0]) rail_half("b");
+if (vpart == "spine_right") spine_right_print();
 if (vpart == "haunch")      haunch();                 // print three
 if (vpart == "haunch_key")  haunch_key();             // print one: the haunch with the key clip
 if (vpart == "lap_staple")  lap_staple();             // print one
@@ -592,7 +596,7 @@ module staple_in_place() translate([-gap / 2 + aligned_hs()[0], 0, mat_t + stapl
 module at(corner, at) translate([at[0] - corner[0], at[1] - corner[1], 0]) children();
 module print_set() {
     at([-22, -48], [0, 0])     rail_half("a");
-    at([-22, -48], [0, 102])   mirror([0, 1, 0]) rail_half("b");
+    at([-22, -48], [0, 102])   spine_right_print();
     at([0, -140.6], [0, 204])  wall("left");
     at([0, 42], [140, 204])    mirror([0, 1, 0]) wall("right");
     for (i = [0 : 2]) at([-5.4, 0.6], [189 + i * 40.4, 0]) haunch();
