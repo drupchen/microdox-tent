@@ -587,6 +587,19 @@ if (vpart == "lap_staple")  lap_staple();             // print one
 if (vpart == "half")        half_left();
 module staple_in_place() translate([-gap / 2 + aligned_hs()[0], 0, mat_t + staple_t])
     mirror([0, 0, 1]) lap_staple();
+// Every part of the stand in one file, laid flat as each prints, 5 mm apart (~347 x 304 mm).
+// Each placement moves the part's own export from its bounding-box corner to its spot.
+module at(corner, at) translate([at[0] - corner[0], at[1] - corner[1], 0]) children();
+module print_set() {
+    at([-22, -48], [0, 0])     rail_half("a");
+    at([-22, -48], [0, 102])   mirror([0, 1, 0]) rail_half("b");
+    at([0, -140.6], [0, 204])  wall("left");
+    at([0, 42], [140, 204])    mirror([0, 1, 0]) wall("right");
+    for (i = [0 : 2]) at([-5.4, 0.6], [189 + i * 40.4, 0]) haunch();
+    at([-5.4, 0.6], [189 + 3 * 40.4, 0]) haunch_key();
+    at([-10.2, -3.2], [189, 120]) lap_staple();
+}
+if (vpart == "print_set")   print_set();               // the whole stand, one file
 if (vpart == "assembly")  { half_left(); half_right(); color([0.3, 0.6, 0.9]) staple_in_place(); }
 // 2D profiles, for cutting the cardboard mock-up at 1:1 (export as SVG). The hinge is 3D;
 // in cardboard, tape the wall to the plate along the axis line.

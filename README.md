@@ -17,7 +17,7 @@ flat into a bag without taking the boards off.
 |---|---|
 | `cad/vertical.scad` | The stand. One parametric file; every part, the assembly, and the asserts that check it. |
 | `cad/charybdis_ref.scad`, `cad/scylla_ref.scad` | The two real bottom plates: outline, six mounting holes, reset plunger, cable opening. Holes from the upstream DXFs, checked against tracings of both plates (0.5–0.6 mm rms). |
-| `stl/vertical/` | The parts, ready to print. Right-hand parts are already mirrored. |
+| `stl/vertical/` | The parts, ready to print. Right-hand parts are already mirrored. `print_set.stl` (and `.3mf`) holds the whole stand in one file: all nine parts laid flat as they print, 5 mm apart, in about 346 × 303 mm. If the print bed is smaller, use the single-part files. |
 | `OWED.md` | Running record of what was found, asked and decided. |
 
 Export a part with `openscad -D 'vpart="wall_left"' -o wall_left.stl cad/vertical.scad`
